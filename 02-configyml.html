@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>config.yml resource types — Cheat sheet</title>
+<style>
+  :root {
+    --text: #1a1a1a;
+    --muted: #5f5e5a;
+    --faint: #888780;
+    --border: rgba(0, 0, 0, 0.12);
+    --accent: #04342c;
+    --code-bg: #f7f6f2;
+    --warn-bg: #faeeda;
+    --warn-text: #633806;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--text); background: #ffffff;
+    margin: 0; padding: 0.6in 0.55in;
+    line-height: 1.45; -webkit-font-smoothing: antialiased;
+    font-size: 10.5pt;
+  }
+  header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--text);
+    padding-bottom: 8px; margin-bottom: 14px;
+  }
+  h1 { font-size: 17pt; font-weight: 500; margin: 0; letter-spacing: -0.01em; }
+  .ribbon {
+    font-size: 9pt; font-weight: 500; color: var(--muted);
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .lede { font-size: 10.5pt; color: var(--muted); margin: 0 0 14px; }
+  .version {
+    background: var(--code-bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 9pt;
+    margin: 0 0 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .card {
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 11px;
+    break-inside: avoid;
+  }
+  .type {
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 11pt; font-weight: 500; color: var(--accent);
+    margin: 0 0 4px;
+  }
+  .desc { font-size: 9pt; color: var(--muted); margin: 0 0 6px; }
+  .fields {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 6px 9px;
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 8pt;
+    line-height: 1.5;
+    margin: 0 0 6px;
+    white-space: pre;
+  }
+  .gotcha {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 8.5pt;
+    line-height: 1.4;
+  }
+  .gotcha strong { font-weight: 500; }
+  .footer-note {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--text);
+    font-size: 9.5pt;
+  }
+  .footer-note h2 {
+    font-size: 9.5pt; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); margin: 0 0 6px;
+  }
+  .footer-note ul { margin: 0; padding-left: 18px; }
+  .footer-note li { margin-bottom: 3px; color: var(--muted); }
+  .footer-note code {
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 8.5pt;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+  footer {
+    margin-top: 14px; padding-top: 8px;
+    border-top: 0.5px solid var(--border);
+    display: flex; justify-content: space-between;
+    font-size: 8.5pt; color: var(--faint);
+  }
+  @page { size: letter; margin: 0.4in; }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>config.yml resource types</h1>
+  <span class="ribbon">Cheat sheet · 02</span>
+</header>
+
+<p class="lede">Top-level keys that declare the lab's infrastructure. Order does not matter.</p>
+
+<div class="version">version: "3"   <span style="color:#888780;"># quote the value — unquoted 3 breaks the parser</span></div>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="type">containers</div>
+    <p class="desc">Docker containers. Lightest, fastest. Most tracks start here.</p>
+    <div class="fields">- name: workstation
+  image: gcr.io/instruqt/cloud-client
+  ports: [8080]
+  memory: 1024
+  shell: /bin/bash
+  environment:
+    KEY: value</div>
+    <div class="gotcha"><strong>Gotcha:</strong> port not in <code style="font-family:monospace;font-size:7.5pt;">ports:</code> cannot be reached from a service tab.</div>
+  </div>
+
+  <div class="card">
+    <div class="type">virtualmachines</div>
+    <p class="desc">Full Linux VM. Required for display server, kernel work, custom images.</p>
+    <div class="fields">- name: app
+  image: ubuntu-os-cloud/ubuntu-2204-lts
+  memory: 4096
+  cpus: 2
+  allow_external_ingress:
+    [http, https, high-ports]
+  nested_virtualization: false
+  provision_ssl_certificate: true</div>
+    <div class="gotcha"><strong>Gotcha:</strong> <code style="font-family:monospace;font-size:7.5pt;">fail-message</code> and <code style="font-family:monospace;font-size:7.5pt;">set-status</code> do not exist on VMs (exit 127).</div>
+  </div>
+
+  <div class="card">
+    <div class="type">virtualbrowsers</div>
+    <p class="desc">Browser tabs pointing at URLs. Pair with a browser-type tab.</p>
+    <div class="fields">- name: app-portal
+  url: https://app.${_SANDBOX_ID}.instruqt.io/</div>
+    <div class="gotcha"><strong>Use when:</strong> exposing a cloud console or sandbox-aware URL through a browser tab.</div>
+  </div>
+
+  <div class="card">
+    <div class="type">aws_accounts</div>
+    <p class="desc">Provisioned AWS account with IAM. Two identities (user + admin).</p>
+    <div class="fields">- name: lab
+  services: [s3, ec2, iam]
+  regions: [us-east-1]
+  managed_policies: [arn:...]
+  admin_managed_policies: [arn:...]
+  iam_policy: |   <span style="color:#888780;"># inline JSON</span>
+    {...}</div>
+    <div class="gotcha"><strong>Gotcha:</strong> service not in <code style="font-family:monospace;font-size:7.5pt;">services:</code> errors at runtime.</div>
+  </div>
+
+  <div class="card">
+    <div class="type">azure_subscriptions</div>
+    <p class="desc">Provisioned Azure subscription. RBAC roles for user and admin.</p>
+    <div class="fields">- name: lab
+  services: [Microsoft.Compute]
+  regions: [eastus]
+  roles: [Reader]
+  admin_roles: [Owner]</div>
+    <div class="gotcha"><strong>Tip:</strong> credentials available via <code style="font-family:monospace;font-size:7.5pt;">/etc/profile.d/instruqt-env.sh</code>.</div>
+  </div>
+
+  <div class="card">
+    <div class="type">gcp_projects</div>
+    <p class="desc">Provisioned GCP project. User and admin service account keys.</p>
+    <div class="fields">- name: lab
+  services:
+    - compute.googleapis.com
+  regions: [us-central1]
+  roles: [roles/compute.viewer]
+  admin_roles: [roles/owner]</div>
+    <div class="gotcha"><strong>Pattern:</strong> use <code style="font-family:monospace;font-size:7.5pt;">CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE</code> for one-shot admin operations.</div>
+  </div>
+
+  <div class="card" style="grid-column: 1 / -1;">
+    <div class="type">secrets</div>
+    <p class="desc">Named values whose actual values live in the platform UI.</p>
+    <div class="fields">- name: VENDOR_API_KEY
+- name: ARANGO_PWD</div>
+    <div class="gotcha"><strong>Use for:</strong> credentials, API tokens, license keys. Available as <code style="font-family:monospace;font-size:7.5pt;">${NAME}</code> in containers/VMs.</div>
+  </div>
+
+</div>
+
+<div class="footer-note">
+  <h2>Across all resource types</h2>
+  <ul>
+    <li>Resource <code>name</code> doubles as the hostname AND the lifecycle script suffix (e.g. <code>setup-workstation</code> runs on the resource named <code>workstation</code>).</li>
+    <li>Container names should avoid underscores — they double as DNS labels.</li>
+    <li>Auto-injected <code>INSTRUQT_*</code> variables (per cloud account) are added to every host's environment without being declared.</li>
+    <li>Use <code>sandbox_preset</code> in <code>track.yml</code> instead of <code>config.yml</code> when a vendor-supplied preset covers the track's needs.</li>
+  </ul>
+</div>
+
+<footer>
+  <span>Instruqt Track Builder's Field Guide</span>
+  <span>Reference card 02 of 10</span>
+</footer>
+
+</body>
+</html>

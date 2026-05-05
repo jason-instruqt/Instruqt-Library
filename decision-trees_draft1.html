@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instruqt Decision Trees</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f7f6f2;
+    --text: #1a1a1a;
+    --text-muted: #5f5e5a;
+    --text-faint: #888780;
+    --border: rgba(0, 0, 0, 0.12);
+    --border-strong: rgba(0, 0, 0, 0.20);
+    --rec-bg: #e1f5ee;
+    --rec-border: #5dcaa5;
+    --rec-text: #04342c;
+    --link-bg: #f1efe8;
+    --link-text: #2c2c2a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    margin: 0;
+    padding: 2.5rem 1.5rem 4rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    font-size: 16px;
+    color: var(--text-muted);
+    margin: 0 0 2rem;
+    line-height: 1.6;
+  }
+  .toc {
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 0 0 3rem;
+    background: var(--bg-subtle);
+  }
+  .toc-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 0.75rem;
+  }
+  .toc ol {
+    margin: 0;
+    padding: 0 0 0 1.5rem;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+  .toc ol li {
+    padding-left: 0.25rem;
+  }
+  h2.tree-title {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 0 0.25rem;
+  }
+  .tree-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+  }
+  .tree-intro {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0 0 1.5rem;
+    line-height: 1.6;
+  }
+  .tree {
+    border-top: 0.5px solid var(--border);
+    padding-top: 2rem;
+    margin-top: 2.5rem;
+  }
+  .tree-num {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem;
+  }
+  .question {
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 0 0 1rem;
+    background: var(--bg);
+  }
+  .q-num {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem;
+  }
+  .q-text {
+    font-size: 15px;
+    margin: 0 0 1rem;
+    line-height: 1.5;
+  }
+  .branches {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .branch {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .branch-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    padding-top: 10px;
+    line-height: 1.4;
+  }
+  .recommendation {
+    background: var(--rec-bg);
+    border: 0.5px solid var(--rec-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--rec-text);
+  }
+  .rec-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 0 2px;
+    line-height: 1.4;
+  }
+  .rec-detail {
+    font-size: 13px;
+    margin: 0;
+    line-height: 1.5;
+    color: var(--rec-text);
+    opacity: 0.85;
+  }
+  .continue {
+    background: var(--link-bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--link-text);
+    font-size: 13px;
+  }
+  .continue strong {
+    font-weight: 500;
+  }
+  .end-note {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text-faint);
+    font-style: italic;
+  }
+  @media (max-width: 600px) {
+    .branch {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .branch-label {
+      padding-top: 0;
+    }
+  }
+  @media print {
+    @page { size: letter; margin: 0.6in; }
+    body { padding: 0; }
+    .page { max-width: 100%; }
+    .tree { page-break-before: always; border-top: none; padding-top: 0; margin-top: 0; }
+    .tree:first-of-type { page-break-before: auto; }
+    .toc { page-break-after: always; }
+    .question { page-break-inside: avoid; }
+    .end-note { page-break-before: always; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Instruqt decision trees</h1>
+<p class="lede">Ten architectural decisions you will make on every track, rendered as navigable reference cards. Each tree is read top to bottom: questions are numbered, answers either resolve to a recommendation (green) or send you to the next question (gray). When a recommendation names a recipe, it points to the companion <em>Pattern Cookbook</em>; when it names a chapter, it points to <em>The Instruqt Track Builder's Field Guide</em>.</p>
+
+<div class="toc">
+  <p class="toc-title">Contents</p>
+  <ol>
+    <li>Choosing your compute</li>
+    <li>Exposing an application to the browser</li>
+    <li>Composing multiple hosts</li>
+    <li>Identity and cloud account strategy</li>
+    <li>Cross-host coordination and state</li>
+    <li>Choosing your check style</li>
+    <li>Structuring your assignment body</li>
+    <li>Generating project files in setup</li>
+    <li>Branding depth</li>
+    <li>Lab pacing and the track clock</li>
+  </ol>
+</div>
+
+<section class="tree">
+  <p class="tree-num">Tree 1</p>
+  <h2 class="tree-title">Choosing your compute</h2>
+  <p class="tree-subtitle">Container, virtual machine, or sandbox preset</p>
+  <p class="tree-intro">The first architectural decision in any track. Boot time, capability, image selection, and which lifecycle helpers work all flow from this single choice. Walk the questions in order.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">Is there an Instruqt sandbox preset for the product you are demonstrating that covers roughly 90% or more of what you need?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the sandbox preset.</p>
+          <p class="rec-detail">Skip config.yml entirely. You eliminate boot timing, image pulls, and agent setup as failure modes — focus on assignment content. Fight the platform only if the preset is below a 60% fit. See Recipe 6 for the full adoption shape.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Does your track require any of the following: a display server (X11 or Xvfb), a real kernel and systemd, nested virtualization, or a custom image with heavy preinstalled dependencies?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — at least one</div>
+        <div class="continue">Continue to <strong>Question 3</strong>.</div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No</div>
+        <div class="continue">Continue to <strong>Question 4</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 3</div>
+    <p class="q-text">Will a stock cloud image (Ubuntu LTS, Debian) work, or do you need a custom image with the dependencies pre-baked?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Stock image is fine</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a virtual machine with a stock cloud image.</p>
+          <p class="rec-detail">Boot is roughly one minute. Install your tooling in the setup script. Remember that fail-message and set-status are container-only — use plain echo plus exit 1 in check scripts. See Recipe 2.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Need a custom image</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a virtual machine with a custom GCP image.</p>
+          <p class="rec-detail">Bake heavy dependencies into a published GCP image. Faster boot than installing at setup time. Trade-off: you have to maintain the image as the underlying product evolves.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 4</div>
+    <p class="q-text">Does your track use cloud CLIs (aws, az, gcloud)?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a container with the cloud-client image.</p>
+          <p class="rec-detail">Ships with AWS, Azure, and GCP CLIs preinstalled, plus common scripting tools. Pulling the image takes longer than the lighter shell image, but the alternative is installing CLIs in setup. See Recipe 1.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a container with the lightweight shell image.</p>
+          <p class="rec-detail">The fastest-booting option in the platform. Boot is well under thirty seconds. fail-message, set-status, and the agent variable commands are built in.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 2</p>
+  <h2 class="tree-title">Exposing an application to the browser</h2>
+  <p class="tree-subtitle">Choosing the right tab type</p>
+  <p class="tree-intro">Most production tracks pair the terminal with one or more browser-rendered surfaces. The tab type is how you choose what the learner sees — and the choice depends entirely on what the surface connects to. Field Guide Chapter 7 covers the underlying model.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">What kind of surface is the learner viewing or interacting with?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Code or text the learner is editing</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a code tab.</p>
+          <p class="rec-detail">Pair an editable starter file with a second code tab pointing at a completed reference implementation as a built-in hint. The platform handles file editing UX entirely. See Recipe 31 (companion code-tab pair).</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">A web UI served by your own infrastructure</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a service tab.</p>
+          <p class="rec-detail">Routes through Instruqt's managed proxy. Critical: any client-side fetch() calls must use relative paths — the learner's browser cannot resolve internal Docker hostnames. If you need a portal and an API, co-host them on the same hostname and port (Recipe 25).</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">A cloud console or external web app</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">A graphical desktop application</div>
+        <div class="continue">Continue to <strong>Question 3</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Does the platform need to manage authentication and session state for the learner?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — it is a provisioned cloud console</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a browser tab tied to a virtualbrowsers block.</p>
+          <p class="rec-detail">AWS, Azure, and GCP consoles authenticate using the credentials the platform provisioned for the lab. The virtualbrowsers block is what enables that handoff. See Recipe 15.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — it is just a public URL</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a website tab.</p>
+          <p class="rec-detail">Strict requirement: the URL must be HTTPS. An http:// URL will cause instruqt track push to fail at validation, and the failure mode is silent at the platform level.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 3</div>
+    <p class="q-text">Is the learner using one specific application, a full Linux desktop, or a Windows RDP session?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">One application</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the VM plus KasmVNC single-app pattern.</p>
+          <p class="rec-detail">KasmVNC wraps a single GUI app and serves it over WebVNC on port 8080. Must run on a VM (display server requirement). Pre-pull the Docker image in your custom VM image to avoid timeout during live setup. See Recipe 18.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Full Linux desktop</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the VM plus noVNC Linux desktop pattern.</p>
+          <p class="rec-detail">Install tightvncserver and xfce4 on the VM, then layer noVNC to bridge VNC to WebSocket. Use the sandbox-aware URL for the website tab so it ties to the VM's external IP. See Recipe 17.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Windows RDP</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the VM plus Guacamole desktop pattern.</p>
+          <p class="rec-detail">Heavier setup. Write /config/guacamole/user-mapping.xml during VM setup and poll for RDP readiness on port 3389 before exiting setup. See Recipe 16.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 3</p>
+  <h2 class="tree-title">Composing multiple hosts</h2>
+  <p class="tree-subtitle">One host, many containers, many VMs, or hybrid</p>
+  <p class="tree-intro">Most tracks need exactly one host. Some need two or more — a workstation plus the system being managed, a workstation plus a database, a primary plus a replica. The shape of the composition determines the recipe. Take the compute decision from Tree 1 first, then walk this tree.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">Does the lesson require more than one host of compute?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">No — one host is enough</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a single-host track.</p>
+          <p class="rec-detail">Recipe 1 (single container) or Recipe 2 (single VM), depending on Tree 1's outcome. Most tracks land here. Resist adding hosts the lesson does not need — every additional host is another setup script, another boot timing window, another failure mode.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Yes — multiple hosts</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Are all the hosts the same compute type?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">All containers</div>
+        <div class="recommendation">
+          <p class="rec-title">Use multi-container composition.</p>
+          <p class="rec-detail">Declare each container under the containers block in config.yml, give each a hostname, and write per-host setup scripts (setup-workstation, setup-db, setup-queue). Containers boot in parallel, not in dependency order — always poll for readiness with Recipe 22 (wait-for-port) before any setup that depends on a peer service. See Recipe 3.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">All VMs</div>
+        <div class="recommendation">
+          <p class="rec-title">Use multi-VM composition.</p>
+          <p class="rec-detail">Declare each VM under virtualmachines. Boot is 60–120 seconds per host. Each VM's setup script runs independently on its host with no implicit ordering. If one host's setup needs another to be running first, gate with Recipe 34 (agent variable cross-host hand-off). See Recipe 4.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Mixed — at least one container and at least one VM</div>
+        <div class="continue">Continue to <strong>Question 3</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 3</div>
+    <p class="q-text">Is one host the workstation the learner uses, and the others are systems being managed?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — workstation plus managed VM(s)</div>
+        <div class="recommendation">
+          <p class="rec-title">Use container plus managed VM.</p>
+          <p class="rec-detail">The workstation is a container (fast boot, terminal tab targets it). The systems being managed are VMs. Provision SSH from the workstation to each VM via agent variable hand-off (Recipe 34). When a managed host should not have a public IP, layer in Recipe 11 (IAP tunnel) on GCP. See Recipe 5.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — custom hybrid topology</div>
+        <div class="recommendation">
+          <p class="rec-title">Compose explicitly in config.yml.</p>
+          <p class="rec-detail">Declare each host under its native block (containers, virtualmachines, sandbox). Write a setup script per host. Order assumptions become your problem — name them, document them in track_scripts comments, and gate with Recipe 22 or Recipe 34 wherever ordering matters. Keep the topology as flat as the lesson allows.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 4</p>
+  <h2 class="tree-title">Identity and cloud account strategy</h2>
+  <p class="tree-subtitle">Choosing the right cloud account block</p>
+  <p class="tree-intro">If the lesson touches a cloud, the cloud account block in config.yml is what makes the credentials show up in the workstation. The wrong block — or a block configured by copy-paste from a different cloud — produces silent auth failures that look like permission bugs. Field Guide Chapter 6 covers the underlying model.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">Does the lesson require any cloud account at all?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">No — pure local lab</div>
+        <div class="recommendation">
+          <p class="rec-title">Skip cloud account blocks entirely.</p>
+          <p class="rec-detail">No aws_accounts, azure_subscriptions, or gcp_projects in config.yml. The track runs entirely on the compute you declared in Trees 1 and 3. Faster boot, simpler auth, fewer cost moving parts.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Yes — at least one cloud</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">How many distinct clouds does the lesson touch?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">One cloud</div>
+        <div class="continue">Continue to <strong>Question 3</strong>.</div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">More than one cloud</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a multi-cloud track.</p>
+          <p class="rec-detail">Stack multiple cloud account blocks. Each cloud authenticates independently with its own provisioned credentials. Keep credential injection per-cloud — do not try to share a single setup snippet across AWS and Azure; their auth handshakes are not symmetric. See Recipe 10.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 3</div>
+    <p class="q-text">Which cloud is the lesson on?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">AWS</div>
+        <div class="recommendation">
+          <p class="rec-title">Use container plus AWS account.</p>
+          <p class="rec-detail">Declare aws_accounts. Auth uses provisioned IAM credentials injected as environment variables. If the lesson needs the AWS console rather than just the CLI, layer in a virtualbrowsers block and a browser tab. See Recipe 7.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Azure</div>
+        <div class="recommendation">
+          <p class="rec-title">Use container plus Azure subscription.</p>
+          <p class="rec-detail">Declare azure_subscriptions. Azure has its own auth model and its own credential injection convention; do not copy-paste from an AWS track. The az login handshake is the most common copy-paste failure point. See Recipe 8.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">GCP</div>
+        <div class="continue">Continue to <strong>Question 4</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 4</div>
+    <p class="q-text">Does the lesson involve a private GCP VM that should not have a public IP?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — private VM behind IAP</div>
+        <div class="recommendation">
+          <p class="rec-title">Use container plus private GCP VM behind IAP tunnel.</p>
+          <p class="rec-detail">SSH reaches the VM through Google's Identity-Aware Proxy. The workstation runs gcloud compute start-iap-tunnel; SSH is configured to use that local port. The learner experiences a normal SSH session; the network shape is genuinely private. See Recipe 11.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — standard public VM or no VM</div>
+        <div class="recommendation">
+          <p class="rec-title">Use container plus GCP project.</p>
+          <p class="rec-detail">Declare gcp_projects. Activate user credentials in the workstation's setup so the terminal opens authenticated. For admin operations during setup, use Recipe 35 (CLOUDSDK auth credential override) — never leave the active gcloud session as the admin's, or every check that validates "the user can do X" trivially passes. See Recipe 9.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 5</p>
+  <h2 class="tree-title">Cross-host coordination and state</h2>
+  <p class="tree-subtitle">Passing values between hosts and across challenges</p>
+  <p class="tree-intro">A single-host track has one shell, one filesystem, and one process tree — state lives wherever you put it. The moment a track has two hosts, or one host plus multiple challenges, you need a discipline for moving values across those boundaries. This tree picks the right one.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">Does any host need a value that is computed by a <em>different</em> host?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — cross-host value flow</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — values stay on one host</div>
+        <div class="continue">Continue to <strong>Question 3</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Is the cross-host value a readiness signal (host A is up) or a computed value (an IP, a token, an ID, a database password)?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Just a readiness signal</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a wait-for-port readiness probe.</p>
+          <p class="rec-detail">The dependent host polls a port on the dependency until it accepts connections, then proceeds. Cheap, deterministic, no shared state needed. Common shapes: pg_isready -h db, redis-cli -h queue ping, or a plain nc -z. See Recipe 22.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">A computed value</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the agent variable cross-host hand-off.</p>
+          <p class="rec-detail">Producing host writes with `agent variable set KEY=value`; consuming host reads with `agent variable get KEY`. Values persist for the life of the track. Compose with the wait-for-port pattern when the consumer needs both a value and a readiness guarantee. See Recipe 34.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 3</div>
+    <p class="q-text">Does any environment variable need to persist on the workstation across challenges and across login and non-login shells?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — persistent shell environment</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the profile.d plus .bashrc dual-write pattern.</p>
+          <p class="rec-detail">Login shells (such as su -) read /etc/profile.d/*.sh; non-login interactive shells (terminal tab default) read ~/.bashrc. Setting the value in only one place leaves the other shell with stale or missing state. Dual-write covers both. See Recipe 28.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — values are local to a single script run</div>
+        <div class="recommendation">
+          <p class="rec-title">No state pattern needed.</p>
+          <p class="rec-detail">Plain bash variables in the setup or check script are sufficient. Resist promoting a transient value to agent variable or .bashrc just because it exists — every promoted value is a future debugging surface.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 6</p>
+  <h2 class="tree-title">Choosing your check style</h2>
+  <p class="tree-subtitle">Lazy, granular, or scored</p>
+  <p class="tree-intro">A check script is the conversation the lab has with the learner when they click Check. The shape of that conversation is a design choice. The wrong shape teaches the wrong thing — a single-line "Try again" on a check that tested nine things is a worse experience than no check at all. Field Guide Chapter 12 covers the underlying philosophy.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">Is this a certification-style track where the learner needs a numerical score at the end?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — scored assessment</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a scored certification rubric.</p>
+          <p class="rec-detail">Each criterion contributes points. The final challenge tallies and surfaces a percentage. The lab feels like an exam: items, score, breakdown of what was missed. A binary pass/fail at the final challenge is too coarse for assessment, and a granular check per challenge runs the lab too quickly to feel like one. See Recipe 37.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — ordinary tutorial or demo</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Does the assignment make several distinct claims about the system state, or one single claim?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Several distinct claims (e.g., user exists, has the right role, can SELECT, cannot DELETE)</div>
+        <div class="recommendation">
+          <p class="rec-title">Use granular check messaging.</p>
+          <p class="rec-detail">Each assertion gets its own line: ✓ on pass, ✗ with a one-line hint on fail. The learner sees exactly which claim failed and what to do about it. Compose with Recipe 26 (Python helper module) for consistent reporting across many checks. See Recipe 36.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">One claim only</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the lazy pattern.</p>
+          <p class="rec-detail">Plain bash: a single test, a fail-message line on container compute or echo plus exit 1 on a VM, exit 0 otherwise. Resist inventing structure for a single assertion. The lazy pattern is not cynical — it is the right shape when the lesson is the right shape.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 7</p>
+  <h2 class="tree-title">Structuring your assignment body</h2>
+  <p class="tree-subtitle">Step-based, prose, recap, or read-only intro</p>
+  <p class="tree-intro">Every challenge has a body — the markdown the learner reads in the assignment pane. The body's shape signals what kind of work is ahead: study this, do these steps, recall what we covered, complete this single task. Picking the wrong shape works against the lesson. Field Guide Chapter 9 covers voice and structure.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">What is the primary purpose of this challenge?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Set context the learner will <em>apply</em> in later challenges</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a read-only intro challenge.</p>
+          <p class="rec-detail">No check script. The body is the lesson. The learner reads the diagram, the architecture, the "what we are building," then clicks to advance. Use sparingly — read-only challenges consume a slot in the track without producing a graded outcome. See Recipe 47.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Recap concepts the learner has already practiced</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a mid-track recap challenge.</p>
+          <p class="rec-detail">Lightweight check, focused body that re-summarizes what the prior block covered. Often combined with a small synthesis exercise (file-based quiz, single command). The pacing function is the point; the check is secondary. See Recipe 46.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Walk the learner through a multi-step task</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the step-based body structure.</p>
+          <p class="rec-detail">Number the steps. Keep each step short. Code blocks are runnable and use the `expand` modifier when the snippet is more than five or six lines. The numbered structure is what signals "you are doing N things, in this order." See Recipe 38.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">A single-task lab — short and direct</div>
+        <div class="recommendation">
+          <p class="rec-title">Use a free-prose body.</p>
+          <p class="rec-detail">Two or three paragraphs of context, one explicit goal, one or two code snippets, done. Do not invent steps for a one-step task. The numbered-list shape implies multiple steps; using it for a single step adds noise to the page.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 8</p>
+  <h2 class="tree-title">Generating project files in setup</h2>
+  <p class="tree-subtitle">Heredoc, git clone, or published archive</p>
+  <p class="tree-intro">Most tracks need to put a project tree in front of the learner at the start of a challenge: a config file to edit, a function to implement, a folder of fixtures. There are three reasonable ways to do that, and the choice depends on size, dependencies, and how much editorial control you want.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">How big is the project tree the learner needs?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Small — a single file or a handful, total under ~50 KB</div>
+        <div class="recommendation">
+          <p class="rec-title">Use heredoc-based project generation.</p>
+          <p class="rec-detail">Write the files inline from the setup script with `cat &gt; path/to/file &lt;&lt; 'EOF' ... EOF`. The track is fully self-contained: no external repo to maintain, no clone failure mode, no rate limit. Quote the heredoc terminator (single quotes around 'EOF') if the body should not be interpolated. See Recipe 24.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Medium — a few directories with a known dependency set</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Large — a real codebase</div>
+        <div class="recommendation">
+          <p class="rec-title">git clone from a versioned repo.</p>
+          <p class="rec-detail">Pin to a tag, never to a branch. The lab is reproducible only if the upstream is reproducible — a moving branch will eventually break the track silently. Mirror the repo internally if the upstream is not under your control. Cache or pre-clone where bandwidth is a concern.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Does the learner need to see and edit one specific file, with a "completed" reference version visible alongside?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — file editing with a reference</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the companion code-tab pair.</p>
+          <p class="rec-detail">Generate the working file and the reference implementation as two separate files in the project tree. Surface them as two `code` tabs: the working file is editable, the reference is read-only. The learner has the answer one tab away — which is the point. See Recipe 31.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — just generate the tree and move on</div>
+        <div class="recommendation">
+          <p class="rec-title">Heredoc the project tree.</p>
+          <p class="rec-detail">Faster than git clone, no external dependency, the entire tree lives in the track repo. For a directory tree, mkdir the folders first, then heredoc each file. Acceptable up to roughly 100 KB; past that the cost of the heredoc grows past the cost of the dependency. See Recipe 24.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 9</p>
+  <h2 class="tree-title">Branding depth</h2>
+  <p class="tree-subtitle">How custom should the lesson feel</p>
+  <p class="tree-intro">Branding is a spectrum, not a switch. At one end: a stock root prompt and a generic shell. At the other: a non-root user with a customer-themed prompt, a custom CLI wrapper, a branded portal page, and a loading message that names the product. The right point on the spectrum is set by what the lesson is teaching. Field Guide Chapter 13 covers the polish threshold.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">Is the lesson teaching the customer's own product, or a generic technology that happens to be relevant?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Generic technology (Linux, Postgres, Kubernetes, Terraform)</div>
+        <div class="recommendation">
+          <p class="rec-title">Skip branding.</p>
+          <p class="rec-detail">Default shell prompt, root user, no CLI wrapper. The technology is the lesson; branding only competes for attention. The track is shorter to maintain and easier to retarget if the customer pivots.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">The customer's product</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Does the lesson need a branded user identity — a specific username that appears in prompts, screenshots, and shell history?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — non-root, named user</div>
+        <div class="recommendation">
+          <p class="rec-title">Use the non-root user pattern.</p>
+          <p class="rec-detail">Create the user in setup, copy or symlink dotfiles so env vars work in their session, set the prompt via /etc/profile.d. Combine with Recipe 28 (profile.d plus .bashrc dual-write) so login and non-login shells both pick up the branded environment. See Recipe 29.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — root is fine, prompt only</div>
+        <div class="continue">Continue to <strong>Question 3</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 3</div>
+    <p class="q-text">Does the customer have a CLI the lesson should demonstrate?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — a real production CLI</div>
+        <div class="recommendation">
+          <p class="rec-title">Install the real CLI in the workstation image.</p>
+          <p class="rec-detail">Bake it in if you control the image; install it in setup if not. Ensure it lands on PATH. If the CLI calls a backend that does not exist in the lab, wrap it with the idempotent binary wrapper pattern (Recipe 27) so retries are safe.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Yes — but it is a teaching aid (mock, demo-shaped)</div>
+        <div class="recommendation">
+          <p class="rec-title">Build a custom CLI wrapper.</p>
+          <p class="rec-detail">A small Python or Node CLI that calls the lab's API (real or mocked, see Recipe 13). Use a library like httpx for HTTP and rich for output formatting — the learner sees colored tables, formatted JSON, and helpful error messages. The CLI is part of the lesson, not just a polish item. See Recipe 30.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — prompt and portal only</div>
+        <div class="recommendation">
+          <p class="rec-title">Apply prompt and portal page only.</p>
+          <p class="rec-detail">Recipe 28 sets the prompt. A branded portal page (Recipe 25, co-hosted portal plus API) carries the visual identity. This is the lightest branded shape — present enough to feel custom, light enough to maintain.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tree">
+  <p class="tree-num">Tree 10</p>
+  <h2 class="tree-title">Lab pacing and the track clock</h2>
+  <p class="tree-subtitle">timelimit, idle_timeout, pausable, skipping_enabled</p>
+  <p class="tree-intro">A track has a clock whether you set one or not. Choosing the clock settings deliberately matters because the wrong settings sabotage the experience: a workshop that times out mid-lesson, a self-paced lab that demands an unbroken hour, an instructor who cannot skip a challenge that ran long. Field Guide Chapter 14 covers the underlying knobs.</p>
+
+  <div class="question">
+    <div class="q-num">Question 1</div>
+    <p class="q-text">How will the lab be delivered?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Live (workshop, instructor demo, conference session)</div>
+        <div class="continue">Continue to <strong>Question 2</strong>.</div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">Self-paced (asynchronous, learner picks when)</div>
+        <div class="continue">Continue to <strong>Question 3</strong>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 2</div>
+    <p class="q-text">Does the live session have a hard wall-clock deadline?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Yes — fixed end time (e.g., a 60-minute workshop)</div>
+        <div class="recommendation">
+          <p class="rec-title">Tight timed-live configuration.</p>
+          <p class="rec-detail">Set timelimit to the deadline (60m). Set show_timer: true so the learner sees the clock. Disable pausable. Disable skipping_enabled — live mode is sequential. Loading messages should be short; enhanced_loading per challenge is overkill when the instructor is talking through it.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">No — instructor controls pacing</div>
+        <div class="recommendation">
+          <p class="rec-title">Loose instructor-led configuration.</p>
+          <p class="rec-detail">Set timelimit generously (2–4 hours). Disable show_timer — visible countdowns create artificial pressure when there is no real deadline. Enable skipping_enabled so the instructor can jump challenges as the demo evolves. Disable pausable.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="question">
+    <div class="q-num">Question 3</div>
+    <p class="q-text">Will most learners complete the lab in one sitting, or will they typically need to step away?</p>
+    <div class="branches">
+      <div class="branch">
+        <div class="branch-label">Step-away likely (lab takes longer than 30 minutes)</div>
+        <div class="recommendation">
+          <p class="rec-title">Pausable, resumable configuration.</p>
+          <p class="rec-detail">Set pausable: true and pausable_ttl to 24h or longer. Leave idle_timeout at the platform default — the learner pauses explicitly when stepping away, rather than racing the idle clock. Enable skipping_enabled so a returning learner can resume without re-doing prior challenges.</p>
+        </div>
+      </div>
+      <div class="branch">
+        <div class="branch-label">One sitting (lab takes 30 minutes or less)</div>
+        <div class="recommendation">
+          <p class="rec-title">Single-sitting configuration.</p>
+          <p class="rec-detail">Disable pausable. Set idle_timeout: 30m to forgive a short interruption (a phone call, a tab switch) without ending the session. Disable skipping_enabled — the lab is short enough to complete linearly, and skipping invites confusion when later checks depend on earlier setup.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<p class="end-note">End of pack. Ten trees, walked top to bottom. When a recommendation names a recipe, open the Pattern Cookbook to that number; when it names a chapter, open the Field Guide.</p>
+
+</div>
+</body>
+</html>

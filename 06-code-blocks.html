@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code block modifiers — Cheat sheet</title>
+<style>
+  :root {
+    --text: #1a1a1a;
+    --muted: #5f5e5a;
+    --faint: #888780;
+    --border: rgba(0, 0, 0, 0.12);
+    --accent: #04342c;
+    --code-bg: #f7f6f2;
+    --warn-bg: #faeeda;
+    --warn-text: #633806;
+    --bad-bg: #fcebeb;
+    --bad-text: #501313;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--text); background: #ffffff;
+    margin: 0; padding: 0.6in 0.55in;
+    line-height: 1.45; -webkit-font-smoothing: antialiased;
+    font-size: 10.5pt;
+  }
+  header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--text);
+    padding-bottom: 8px; margin-bottom: 14px;
+  }
+  h1 { font-size: 17pt; font-weight: 500; margin: 0; letter-spacing: -0.01em; }
+  .ribbon {
+    font-size: 9pt; font-weight: 500; color: var(--muted);
+    letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .lede { font-size: 10.5pt; color: var(--muted); margin: 0 0 16px; }
+  h2 {
+    font-size: 9.5pt; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); margin: 14px 0 6px;
+    padding-bottom: 4px; border-bottom: 0.5px solid var(--accent);
+  }
+  h2:first-of-type { margin-top: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+  td {
+    vertical-align: top;
+    padding: 5px 8px 5px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  td.modifier {
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 9pt;
+    color: var(--text);
+    white-space: nowrap;
+    width: 38%;
+  }
+  td.behavior { color: var(--muted); }
+  tr:last-child td { border-bottom: none; }
+  .trap-block {
+    background: var(--bad-bg);
+    color: var(--bad-text);
+    border-radius: 4px;
+    padding: 9px 12px;
+    margin: 8px 0;
+    font-size: 9.5pt;
+    line-height: 1.5;
+  }
+  .trap-block strong { font-weight: 500; }
+  .trap-block code {
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 8.5pt;
+    background: rgba(0,0,0,0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--bad-text);
+  }
+  .examples {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 8px 0 0;
+  }
+  .example {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 8pt;
+    line-height: 1.5;
+  }
+  .example .label {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 9pt;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .lang-list {
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 9pt;
+    color: var(--text);
+    margin: 0;
+  }
+  .footer-note {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid var(--text);
+    font-size: 9.5pt;
+  }
+  .footer-note h2 {
+    font-size: 9.5pt; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); margin: 0 0 6px;
+    padding-bottom: 0; border: none;
+  }
+  .footer-note ul { margin: 0; padding-left: 18px; }
+  .footer-note li { margin-bottom: 3px; color: var(--muted); }
+  .footer-note code {
+    font-family: "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: 8.5pt;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--text);
+  }
+  footer {
+    margin-top: 14px; padding-top: 8px;
+    border-top: 0.5px solid var(--border);
+    display: flex; justify-content: space-between;
+    font-size: 8.5pt; color: var(--faint);
+  }
+  @page { size: letter; margin: 0.4in; }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Code block modifiers</h1>
+  <span class="ribbon">Cheat sheet · 06</span>
+</header>
+
+<p class="lede">Modifiers placed after the opening fence and language identifier turn static code blocks into interactive UI in assignment.md bodies.</p>
+
+<h2>Modifiers</h2>
+<table>
+  <tr>
+    <td class="modifier">```bash,run</td>
+    <td class="behavior">Click-to-run in the active terminal. Most common form.</td>
+  </tr>
+  <tr>
+    <td class="modifier">```run</td>
+    <td class="behavior">Click-to-run, no syntax highlighting.</td>
+  </tr>
+  <tr>
+    <td class="modifier">```copy</td>
+    <td class="behavior">Adds a copy-to-clipboard button.</td>
+  </tr>
+  <tr>
+    <td class="modifier">```nocopy</td>
+    <td class="behavior">Disables the default copy button.</td>
+  </tr>
+  <tr>
+    <td class="modifier">```bash,wrap</td>
+    <td class="behavior">Wraps long lines instead of horizontal scroll.</td>
+  </tr>
+  <tr>
+    <td class="modifier">```bash,wrap,copy</td>
+    <td class="behavior">Wrap plus copy. Useful for long one-liners.</td>
+  </tr>
+  <tr>
+    <td class="modifier">```bash,nocopy,run</td>
+    <td class="behavior">Run-only, no copy button. For commands the learner shouldn't grab.</td>
+  </tr>
+  <tr>
+    <td class="modifier">```bash</td>
+    <td class="behavior">Plain bash block. No run button. Use for snippets with placeholders.</td>
+  </tr>
+</table>
+
+<div class="trap-block">
+  <strong>Trap:</strong> <code>```bash {"run": "execute"}</code> looks like it should work but is <strong>not</strong> valid Instruqt syntax. The block renders, but no run button appears. Always use comma-separated modifiers: <code>```bash,run</code>.
+</div>
+
+<h2>Common combinations</h2>
+<div class="examples">
+  <div class="example">
+    <span class="label">Click-to-run command</span>
+    ```bash,run<br>
+    aws s3 ls<br>
+    ```
+  </div>
+  <div class="example">
+    <span class="label">Copyable long command</span>
+    ```bash,wrap,copy<br>
+    curl -X POST ...<br>
+    ```
+  </div>
+  <div class="example">
+    <span class="label">Snippet with placeholder</span>
+    ```bash<br>
+    grant select on table<br>
+    &lt;TABLE_NAME&gt; to analyst;<br>
+    ```
+  </div>
+  <div class="example">
+    <span class="label">Plain reference output</span>
+    ```nocopy<br>
+    Process completed.<br>
+    ```
+  </div>
+</div>
+
+<h2>Supported language identifiers</h2>
+<p class="lang-list">bash · python · javascript · js · typescript · ts · yaml · yml · json · dockerfile · hcl · aql · graphql · markdown · ruby · go · rust</p>
+
+<div class="footer-note">
+  <h2>Choosing the right modifier</h2>
+  <ul>
+    <li>Use <code>bash,run</code> for any command the learner should execute as-is.</li>
+    <li>Use plain <code>bash</code> (no modifiers) for snippets containing placeholders the learner must edit before running — this prevents the run button from appearing on broken commands.</li>
+    <li>Use <code>nocopy</code> on output blocks the learner shouldn't paste back into the terminal.</li>
+    <li>Modifiers can stack freely; order does not matter (<code>bash,wrap,copy</code> equals <code>bash,copy,wrap</code>).</li>
+  </ul>
+</div>
+
+<footer>
+  <span>Instruqt Track Builder's Field Guide</span>
+  <span>Reference card 06 of 10</span>
+</footer>
+
+</body>
+</html>

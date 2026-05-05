@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Better Instruqt Tracks</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sidebar-w: 240px;
+  --max-w: 780px;
+  --purple-900: #2e0a6e;
+  --purple-800: #3B0F8C;
+  --purple-700: #5B21B6;
+  --purple-600: #7C3AED;
+  --purple-400: #A78BFA;
+  --purple-200: #DDD6FE;
+  --purple-100: #EDE9FE;
+  --purple-50:  #F5F3FF;
+  --amber-500:  #F59E0B;
+  --amber-50:   #FFF7ED;
+  --green-500:  #10B981;
+  --green-50:   #ECFDF5;
+  --dark:       #1E1B2E;
+  --mid:        #4B4569;
+  --light:      #6D6490;
+  --rule:       #DDD6FE;
+  --code-bg:    #F0EDFF;
+  --code-color: #3730A3;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--mid);
+  background: #fff;
+}
+
+/* ── LAYOUT ── */
+.layout { display: flex; min-height: 100vh; }
+.main { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+.content { max-width: var(--max-w); margin: 0 auto; padding: 48px 48px 80px; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  background: var(--purple-800);
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  display: inline-block;
+  margin: 24px 24px 0;
+  background: var(--purple-400);
+  color: var(--purple-800);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.sidebar-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  padding: 10px 24px 20px;
+  line-height: 1.3;
+}
+
+.nav-group-label {
+  margin: 22px 24px 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--purple-400);
+  opacity: 0.85;
+}
+
+.nav-item {
+  display: flex;
+  align-items: baseline;
+  padding: 7px 16px 7px 24px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.65);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  line-height: 1.4;
+}
+.nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); border-left-color: rgba(167,139,250,0.5); }
+.nav-item.active { color: #fff; border-left-color: var(--purple-400); background: rgba(255,255,255,0.07); }
+
+.nav-num {
+  color: var(--purple-400);
+  font-weight: 700;
+  font-size: 11px;
+  margin-right: 8px;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, var(--purple-800) 0%, var(--purple-700) 60%, #6D28D9 100%);
+  padding: 72px 60px 56px;
+  overflow: hidden;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 360px; height: 360px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  top: -80px; right: -60px;
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+  bottom: -60px; left: 40px;
+  pointer-events: none;
+}
+
+.hero-series {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--purple-400);
+  margin-bottom: 14px;
+  animation: fadeUp 0.5s ease 0.05s both;
+}
+
+.hero h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(38px, 6vw, 56px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.05;
+  margin-bottom: 14px;
+  animation: fadeUp 0.5s ease 0.12s both;
+}
+.hero h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--purple-400);
+  display: block;
+}
+
+.hero-tagline {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 36px;
+  animation: fadeUp 0.5s ease 0.24s both;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  animation: fadeUp 0.5s ease 0.32s both;
+}
+.stat-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 16px 18px;
+  backdrop-filter: blur(4px);
+}
+.stat-value {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label { font-size: 10.5px; color: var(--purple-400); font-weight: 500; letter-spacing: 0.04em; }
+
+/* ── TOC ── */
+.toc {
+  background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+  border: 1px solid var(--purple-200);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin-bottom: 48px;
+}
+.toc-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--purple-700);
+  margin-bottom: 16px;
+}
+.toc-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--purple-700);
+  margin: 14px 0 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--purple-200);
+}
+.toc-group-label:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; margin-bottom: 14px; }
+.toc-grid:last-child { margin-bottom: 0; }
+.toc-link {
+  display: flex;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--mid);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+}
+.toc-link:hover { color: var(--purple-600); }
+.toc-link-num {
+  display: inline-block;
+  color: var(--purple-600);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  margin-right: 8px;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+.toc-solo { margin-top: 10px; }
+
+/* ── SECTION HEADERS ── */
+.section-label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  border-bottom: 1.5px solid var(--purple-200);
+  padding-bottom: 14px;
+  margin: 56px 0 20px;
+}
+section:first-of-type .section-label { margin-top: 0; }
+
+.section-pill-wrap { padding-top: 4px; }
+.section-pill {
+  background: var(--purple-600);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  display: inline-block;
+}
+.section-eyebrow {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 13px;
+  color: var(--purple-400);
+  margin-bottom: 4px;
+}
+.section-title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--dark);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ── TYPOGRAPHY ── */
+h3 { font-size: 14px; font-weight: 600; color: var(--dark); margin: 22px 0 8px; }
+p { margin-bottom: 14px; }
+p:last-child { margin-bottom: 0; }
+strong { font-weight: 600; color: var(--dark); }
+em { font-style: italic; }
+a { color: var(--purple-600); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: var(--code-bg);
+  color: var(--code-color);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--purple-200);
+  border-left: 3px solid var(--purple-600);
+  border-radius: 6px;
+  padding: 18px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 13px;
+  color: var(--code-color);
+  line-height: 1.7;
+}
+
+/* ── LISTS ── */
+ul, ol { padding-left: 0; list-style: none; margin-bottom: 14px; }
+ul li { padding: 4px 0 4px 22px; position: relative; }
+ul li::before { content: '•'; position: absolute; left: 6px; color: var(--purple-600); font-weight: 700; }
+ol { counter-reset: ol-counter; }
+ol li { counter-increment: ol-counter; padding: 4px 0 4px 22px; position: relative; }
+ol li::before { content: counter(ol-counter) '.'; position: absolute; left: 0; color: var(--purple-600); font-weight: 700; }
+
+/* ── CALLOUTS ── */
+.callout {
+  border-left: 3px solid var(--purple-600);
+  background: var(--purple-50);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+.callout.warning { border-left-color: var(--amber-500); background: var(--amber-50); }
+.callout.success { border-left-color: var(--green-500); background: var(--green-50); }
+.callout-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple-700);
+  margin-bottom: 6px;
+}
+.callout.warning .callout-label { color: #92400E; }
+.callout.success .callout-label { color: #065F46; }
+.callout p { font-size: 14px; }
+
+/* ── CORE IDEA ── */
+.core-idea {
+  position: relative;
+  background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+  border: 1px solid var(--purple-200);
+  border-radius: 12px;
+  padding: 28px 32px 24px;
+  margin: 24px 0;
+  overflow: hidden;
+}
+.core-idea::before {
+  content: '"';
+  position: absolute;
+  top: -8px; right: 16px;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 120px;
+  color: var(--purple-200);
+  line-height: 1;
+  pointer-events: none;
+}
+.core-idea p {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--purple-700);
+  max-width: 520px;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+/* ── PITFALL LIST ── */
+.pitfall-list { border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; margin: 18px 0; }
+.pitfall { display: grid; grid-template-columns: 36px 1fr; border-bottom: 1px solid var(--rule); transition: background 0.15s; }
+.pitfall:last-child { border-bottom: none; }
+.pitfall:hover { background: var(--purple-50); }
+.pitfall-num {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--purple-200);
+  background: var(--purple-50);
+  border-right: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 0;
+}
+.pitfall-content { padding: 14px 16px; }
+.pitfall-trap { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+.pitfall-fix { font-size: 13px; color: var(--mid); margin: 0; }
+
+/* ── RULE BLOCK ── */
+.rule-block {
+  background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+  border: 1px solid var(--purple-200);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin: 18px 0;
+}
+.rule-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--purple-700);
+  margin-bottom: 8px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── PRINT ── */
+@media print {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .content { padding: 32px 24px 60px; }
+  .hero { padding: 48px 32px 40px; }
+  .hero-stats { grid-template-columns: 1fr 1fr; }
+  .toc-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <span class="sidebar-logo">Instruqt</span>
+  <div class="sidebar-title">Building Better Tracks</div>
+
+  <a class="nav-item" href="#s1"><span class="nav-num">PRE</span>Preface</a>
+
+  <div class="nav-group-label">Part I — Architecture</div>
+  <a class="nav-item" href="#s2"><span class="nav-num">CH 01</span>Lightest Compute</a>
+  <a class="nav-item" href="#s3"><span class="nav-num">CH 02</span>Right Base Image</a>
+  <a class="nav-item" href="#s4"><span class="nav-num">CH 03</span>Sandbox Presets</a>
+  <a class="nav-item" href="#s5"><span class="nav-num">CH 04</span>Pre-pull Images</a>
+  <a class="nav-item" href="#s6"><span class="nav-num">CH 05</span>Single Proxy</a>
+
+  <div class="nav-group-label">Part II — Lifecycle Scripts</div>
+  <a class="nav-item" href="#s7"><span class="nav-num">CH 06</span>Wait for Readiness</a>
+  <a class="nav-item" href="#s8"><span class="nav-num">CH 07</span>Wrap Subprocesses</a>
+  <a class="nav-item" href="#s9"><span class="nav-num">CH 08</span>Idempotent Solves</a>
+  <a class="nav-item" href="#s10"><span class="nav-num">CH 09</span>Guard Renames</a>
+  <a class="nav-item" href="#s11"><span class="nav-num">CH 10</span>Strip Null Bytes</a>
+
+  <div class="nav-group-label">Part III — Check Scripts</div>
+  <a class="nav-item" href="#s12"><span class="nav-num">CH 11</span>Make Checks Teach</a>
+  <a class="nav-item" href="#s13"><span class="nav-num">CH 12</span>Container Helpers</a>
+  <a class="nav-item" href="#s14"><span class="nav-num">CH 13</span>Validate Intent</a>
+  <a class="nav-item" href="#s15"><span class="nav-num">CH 14</span>Score the Work</a>
+
+  <div class="nav-group-label">Part IV — Content Design</div>
+  <a class="nav-item" href="#s16"><span class="nav-num">CH 15</span>Reference Impl.</a>
+  <a class="nav-item" href="#s17"><span class="nav-num">CH 16</span>HTTPS Everywhere</a>
+  <a class="nav-item" href="#s18"><span class="nav-num">CH 17</span>Sequential Numbers</a>
+  <a class="nav-item" href="#s19"><span class="nav-num">CH 18</span>Defensive Setup</a>
+
+  <div class="nav-group-label">Part V — Shipping</div>
+  <a class="nav-item" href="#s20"><span class="nav-num">CH 19</span>End-to-End Testing</a>
+  <a class="nav-item" href="#s21"><span class="nav-num">CH 20</span>Windows Re-test</a>
+
+  <a class="nav-item" href="#s22" style="margin-top:12px;"><span class="nav-num">END</span>Closing Note</a>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="hero">
+    <div class="hero-series">Best Practices Booklet · Instruqt Platform</div>
+    <h1>Building Better <em>Instruqt Tracks</em></h1>
+    <div class="hero-tagline">Twenty principles for tracks that work in production.</div>
+    <div class="hero-stats">
+      <div class="stat-card"><div class="stat-value">5</div><div class="stat-label">Parts</div></div>
+      <div class="stat-card"><div class="stat-value">20</div><div class="stat-label">Principles</div></div>
+      <div class="stat-card"><div class="stat-value">100%</div><div class="stat-label">From Production</div></div>
+      <div class="stat-card"><div class="stat-value">1</div><div class="stat-label">Booklet</div></div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- TOC -->
+    <div class="toc">
+      <div class="toc-title">In this guide</div>
+
+      <a class="toc-link toc-solo" href="#s1"><span class="toc-link-num">PRE</span>Preface</a>
+
+      <div class="toc-group-label">Part I — Architecture &amp; Infrastructure</div>
+      <div class="toc-grid">
+        <a class="toc-link" href="#s2"><span class="toc-link-num">CH 01</span>Choose the Lightest Compute</a>
+        <a class="toc-link" href="#s3"><span class="toc-link-num">CH 02</span>Right Base Image</a>
+        <a class="toc-link" href="#s4"><span class="toc-link-num">CH 03</span>Sandbox Presets First</a>
+        <a class="toc-link" href="#s5"><span class="toc-link-num">CH 04</span>Pre-pull Docker Images</a>
+        <a class="toc-link" href="#s6"><span class="toc-link-num">CH 05</span>Single Proxy Endpoint</a>
+      </div>
+
+      <div class="toc-group-label">Part II — Lifecycle Scripts</div>
+      <div class="toc-grid">
+        <a class="toc-link" href="#s7"><span class="toc-link-num">CH 06</span>Wait for Readiness</a>
+        <a class="toc-link" href="#s8"><span class="toc-link-num">CH 07</span>Wrap Subprocess Calls</a>
+        <a class="toc-link" href="#s9"><span class="toc-link-num">CH 08</span>Idempotent Solve Scripts</a>
+        <a class="toc-link" href="#s10"><span class="toc-link-num">CH 09</span>Guard Idempotent Renames</a>
+        <a class="toc-link" href="#s11"><span class="toc-link-num">CH 10</span>Strip Null Bytes</a>
+      </div>
+
+      <div class="toc-group-label">Part III — Check Scripts that Teach</div>
+      <div class="toc-grid">
+        <a class="toc-link" href="#s12"><span class="toc-link-num">CH 11</span>Make Every Check Teach</a>
+        <a class="toc-link" href="#s13"><span class="toc-link-num">CH 12</span>Container-only Helpers</a>
+        <a class="toc-link" href="#s14"><span class="toc-link-num">CH 13</span>Validate Intent, Not State</a>
+        <a class="toc-link" href="#s15"><span class="toc-link-num">CH 14</span>Score the Work</a>
+      </div>
+
+      <div class="toc-group-label">Part IV — Content &amp; Assignment Design</div>
+      <div class="toc-grid">
+        <a class="toc-link" href="#s16"><span class="toc-link-num">CH 15</span>Reference Implementations</a>
+        <a class="toc-link" href="#s17"><span class="toc-link-num">CH 16</span>HTTPS on Every Tab</a>
+        <a class="toc-link" href="#s18"><span class="toc-link-num">CH 17</span>Sequential Challenge Numbers</a>
+        <a class="toc-link" href="#s19"><span class="toc-link-num">CH 18</span>Defensive Challenge Setup</a>
+      </div>
+
+      <div class="toc-group-label">Part V — Shipping &amp; Maintenance</div>
+      <div class="toc-grid">
+        <a class="toc-link" href="#s20"><span class="toc-link-num">CH 19</span>End-to-End Testing</a>
+        <a class="toc-link" href="#s21"><span class="toc-link-num">CH 20</span>Re-test After Windows Edits</a>
+      </div>
+
+      <a class="toc-link toc-solo" href="#s22" style="margin-top:10px;"><span class="toc-link-num">END</span>Closing Note</a>
+    </div>
+
+    <!-- PREFACE -->
+    <section id="s1">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">PRE</span></div>
+        <div><h2 class="section-title">Preface</h2></div>
+      </div>
+      <p>This booklet is a short, opinionated set of rules for authors of Instruqt tracks. It is not a tutorial, a reference, or a survey of what is possible. It is a list of habits that distinguish tracks that ship cleanly from tracks that fight their author at every step.</p>
+      <p>Each principle is stated as a single sentence, followed by a paragraph or two explaining why it earns its place on this list. Where a code snippet helps, one is included. The principles are organized into five parts — architecture, lifecycle scripts, check scripts, content design, and shipping — but they are meant to be readable in any order. Read them straight through the first time. Come back to a single chapter when you have a specific problem in front of you.</p>
+      <div class="core-idea"><p>These rules are descriptive, not invented. Every one of them comes from production tracks where the wrong choice produced an actual symptom. The rules are short because the symptoms were long.</p></div>
+      <p>Some of these rules will feel obvious. Some will feel like overkill until the day they save you. Some you will disagree with — and disagreement is fine, as long as you have thought about it.</p>
+    </section>
+
+    <!-- CH 01 -->
+    <section id="s2">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 01</span></div>
+        <div>
+          <div class="section-eyebrow">Part I — Architecture &amp; Infrastructure</div>
+          <h2 class="section-title">Choose the lightest compute that works.</h2>
+        </div>
+      </div>
+      <p>The default of "what I used last time" is how tracks end up overprovisioned, slow to start, or unable to host the very tool they were built to demonstrate. The platform offers three compute primitives — containers, virtual machines, and sandbox presets — and they differ by an order of magnitude in boot time, capability, and maintenance burden.</p>
+      <div class="pitfall-list">
+        <div class="pitfall">
+          <div class="pitfall-num">1</div>
+          <div class="pitfall-content">
+            <div class="pitfall-trap">Containers</div>
+            <p class="pitfall-fix">Boot in under 30 seconds. Ship with Instruqt agent helpers built in. First choice unless you have a concrete reason to escalate.</p>
+          </div>
+        </div>
+        <div class="pitfall">
+          <div class="pitfall-num">2</div>
+          <div class="pitfall-content">
+            <div class="pitfall-trap">Virtual Machines</div>
+            <p class="pitfall-fix">Boot in over a minute. Require manual tooling installation. Reach for these only when you need a display server, real kernel, nested virtualization, or heavy preinstalled dependencies.</p>
+          </div>
+        </div>
+        <div class="pitfall">
+          <div class="pitfall-num">3</div>
+          <div class="pitfall-content">
+            <div class="pitfall-trap">Custom GCP Images</div>
+            <p class="pitfall-fix">Boot fast but commit you to maintaining the image as the underlying product evolves. Only justified when dependencies are too heavy to install at setup time.</p>
+          </div>
+        </div>
+      </div>
+      <div class="callout">
+        <div class="callout-label">The Rule</div>
+        <p>Start with the lightest option that meets your requirements and escalate only when a concrete need appears. Reach for a sandbox preset, when one exists, before any of the above.</p>
+      </div>
+    </section>
+
+    <!-- CH 02 -->
+    <section id="s3">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 02</span></div>
+        <div>
+          <div class="section-eyebrow">Part I — Architecture &amp; Infrastructure</div>
+          <h2 class="section-title">Use the right base image for your cloud usage.</h2>
+        </div>
+      </div>
+      <p>The two most-used Instruqt container base images differ enough in size and contents that the wrong choice imposes a real cost. The lighter image — a minimal shell environment — boots fast but ships with almost nothing a cloud-account track needs. The heavier "cloud-client" image carries the AWS, Azure, and GCP CLIs preinstalled, plus common scripting tools.</p>
+      <p>The trap is reaching for the lighter image, wiring up an <code>aws_accounts</code> block, and then watching the learner type <code>aws s3 ls</code> on a container that has no <code>aws</code> binary on the path. The fix is one of two: switch to the cloud-client image, or install the CLI in the track-level setup script before any challenge runs.</p>
+      <pre><code># In track_scripts/setup-workstation, when staying on the lighter image
+curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscli.zip
+unzip -q /tmp/awscli.zip -d /tmp
+/tmp/aws/install</code></pre>
+      <div class="callout warning">
+        <div class="callout-label">The Wrong Choice</div>
+        <p>The one where you discover the problem from a learner's terminal output during a live demo. Both options above are valid. There is no excuse for the third.</p>
+      </div>
+    </section>
+
+    <!-- CH 03 -->
+    <section id="s4">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 03</span></div>
+        <div>
+          <div class="section-eyebrow">Part I — Architecture &amp; Infrastructure</div>
+          <h2 class="section-title">Reach for a sandbox preset before building from scratch.</h2>
+        </div>
+      </div>
+      <p>When a vendor whose product your track demonstrates has packaged that product as an Instruqt sandbox preset, use the preset. Skipping <code>config.yml</code> and <code>track_scripts/</code> entirely removes a category of failure modes — boot timing, image pulls, agent installation, environment variable injection — and lets you focus on assignment content rather than environment provisioning.</p>
+      <p>The trade-off is that you cannot modify a preset. If you need a custom dataset, a third-party CLI, or an additional exposed port, you have to switch back to a <code>config.yml</code>-based design.</p>
+      <div class="rule-block">
+        <div class="rule-label">Threshold</div>
+        <p>If the preset is a <strong>90% fit</strong>, use it and design around the 10%. If it is a <strong>60% fit</strong>, build the environment yourself. The middle ground produces tracks that fight the platform — half-preset, half-custom, with an integration seam that becomes the source of every bug.</p>
+      </div>
+    </section>
+
+    <!-- CH 04 -->
+    <section id="s5">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 04</span></div>
+        <div>
+          <div class="section-eyebrow">Part I — Architecture &amp; Infrastructure</div>
+          <h2 class="section-title">Pre-pull Docker images in setup, never inside a challenge.</h2>
+        </div>
+      </div>
+      <p>Tracks that orchestrate multiple Docker containers on a workstation VM pay a hidden tax if the images are pulled lazily during a challenge. A learner's first command becomes a several-minute wait while images download, often without a clear progress indicator. Worse, if the pull fails due to network or registry rate limits, the failure surfaces as a generic command error.</p>
+      <p>Pre-pull every image you know the track will use during the track-level setup script, in parallel:</p>
+      <pre><code>docker pull example.com/service-a:1.4 &
+docker pull example.com/service-b:1.4 &
+docker pull example.com/service-c:1.4 &
+wait</code></pre>
+      <div class="callout success">
+        <div class="callout-label">Pro Tip</div>
+        <p>If a pull is going to fail, you want it to fail visibly during setup — where you can see it and add retries — not silently during a live demo.</p>
+      </div>
+    </section>
+
+    <!-- CH 05 -->
+    <section id="s6">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 05</span></div>
+        <div>
+          <div class="section-eyebrow">Part I — Architecture &amp; Infrastructure</div>
+          <h2 class="section-title">Co-host portals and APIs on a single proxy endpoint.</h2>
+        </div>
+      </div>
+      <p>A common track shape pairs a portal page with a backend API the portal calls. The naïve architecture serves the portal on one container's port and the API on another's, then exposes both as separate <code>service</code> tabs. This works in the terminal — <code>curl</code> against the API hostname succeeds — but breaks the moment the portal's JavaScript tries to call the API. The learner's browser is talking to Instruqt's proxy, not your Docker network, and an absolute URL pointing at an internal hostname will fail with no usable error.</p>
+      <p>Serve both surfaces from the same hostname and the same port, routing by URL prefix on the server side. A single uvicorn or Flask process can handle the portal at <code>/</code> and the API at <code>/api/*</code>. Relative paths just work, and the entire class of cross-origin headaches disappears.</p>
+      <div class="core-idea"><p>One proxy endpoint, relative paths only.</p></div>
+    </section>
+
+    <!-- CH 06 -->
+    <section id="s7">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 06</span></div>
+        <div>
+          <div class="section-eyebrow">Part II — Lifecycle Scripts</div>
+          <h2 class="section-title">Wait for readiness, not just for running.</h2>
+        </div>
+      </div>
+      <p>Most services take longer to be <em>ready</em> than they take to be <em>running</em>. A postgres container accepts TCP connections seconds before the database accepts queries. A Flask app binds its port milliseconds before it can serve a request. A KasmVNC container responds to HTTP before its internal display server is fully up. Setup scripts that exit as soon as a container reports "running" race the actual readiness state, and the failure mode is a 502 on the learner's first interaction.</p>
+      <p>Replace process-up checks with readiness checks that exercise the actual interface the learner will use:</p>
+      <pre><code># For postgres
+until pg_isready -h db -U app -d app; do sleep 1; done
+
+# For HTTP services — poll the health endpoint
+until curl -fsS http://workstation:5000/healthz > /dev/null; do sleep 1; done</code></pre>
+      <p>The principle is the same in every case: the setup script exits only when the next thing that will touch the service can actually succeed.</p>
+    </section>
+
+    <!-- CH 07 -->
+    <section id="s8">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 07</span></div>
+        <div>
+          <div class="section-eyebrow">Part II — Lifecycle Scripts</div>
+          <h2 class="section-title">Wrap every subprocess call in a check script.</h2>
+        </div>
+      </div>
+      <p><code>set -euo pipefail</code> at the top of a check script is good defensive hygiene — until you start invoking subprocesses. Any unguarded <code>python3 -c ...</code>, <code>curl ...</code>, or <code>psql ...</code> that exits non-zero will trigger an immediate, silent bash exit. The platform renders a generic "Something went wrong" modal that points at no specific cause.</p>
+      <p>Wrap every subprocess call in an explicit error handler so a clean failure produces a useful message instead of a void:</p>
+      <pre><code>RESULT=$(curl -fsS "$API/healthz") || {
+  fail-message "API health check failed. Is the service running on port 8000?"
+  exit 1
+}</code></pre>
+      <p>The cost is roughly half a line per call. The payoff is a check script that surfaces a real error message when something goes wrong.</p>
+    </section>
+
+    <!-- CH 08 -->
+    <section id="s9">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 08</span></div>
+        <div>
+          <div class="section-eyebrow">Part II — Lifecycle Scripts</div>
+          <h2 class="section-title">Make solve scripts idempotent and complete.</h2>
+        </div>
+      </div>
+      <p>A solve script's job is to produce the exact state that the corresponding check script validates, regardless of the state the host is in when the script runs. It must succeed when run twice (idempotent), and it must produce <em>every</em> condition the check script tests for (complete).</p>
+      <p>Idempotency is the more common failure. A solve script that runs <code>useradd analyst</code> will fail on its second run because the user already exists. Write every solve step as either "create if absent" or "ensure desired state" rather than "create." Completeness is more often missed — a check script that verifies five properties needs a solve script that establishes all five.</p>
+      <div class="callout success">
+        <div class="callout-label">Litmus Test</div>
+        <p>Run the solve script twice on a fresh environment, then run the check script. If the check passes both times, the solve is correctly idempotent and complete.</p>
+      </div>
+    </section>
+
+    <!-- CH 09 -->
+    <section id="s10">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 09</span></div>
+        <div>
+          <div class="section-eyebrow">Part II — Lifecycle Scripts</div>
+          <h2 class="section-title">Guard your idempotent renames.</h2>
+        </div>
+      </div>
+      <p>The standard pattern for wrapping a system binary is to rename the original out of the way (<code>mv /usr/bin/foo /usr/bin/foo-real</code>) and write a wrapper script in its place. This works perfectly the first time. On the second run of the same setup script, the rename moves the <em>wrapper</em> to <code>foo-real</code>, and the new wrapper calls itself — infinite recursion that fills the host's process table.</p>
+      <p>Guard the rename with a check for the backup file's existence:</p>
+      <pre><code>if [ ! -f /usr/bin/foo-real ]; then
+  mv /usr/bin/foo /usr/bin/foo-real
+fi
+
+cat > /usr/bin/foo &lt;&lt;'EOF'
+#!/bin/bash
+exec /usr/bin/foo-real --extra-flag "$@"
+EOF
+chmod +x /usr/bin/foo</code></pre>
+      <p>The wrapper itself is safe to rewrite on every run — only the rename needs guarding.</p>
+    </section>
+
+    <!-- CH 10 -->
+    <section id="s11">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 10</span></div>
+        <div>
+          <div class="section-eyebrow">Part II — Lifecycle Scripts</div>
+          <h2 class="section-title">Strip null bytes after editing on a Windows host.</h2>
+        </div>
+      </div>
+      <p>Files edited on a Windows-mounted filesystem can accumulate trailing null bytes — invisible <code>0x00</code> characters that don't show up in any normal editor view but break <code>instruqt track push</code> with a misleading error: <code>invalid byte sequence for encoding "UTF8": 0x00</code>. The most common victims are <code>track.yml</code>, <code>config.yml</code>, and individual <code>assignment.md</code> files.</p>
+      <p>Strip nulls with a quick Python pass before pushing:</p>
+      <pre><code>import pathlib
+for p in pathlib.Path(".").rglob("*"):
+    if p.suffix in (".yml", ".md") and p.is_file():
+        b = p.read_bytes()
+        if b'\x00' in b:
+            p.write_bytes(b.replace(b'\x00', b''))
+            print(f"stripped: {p}")</code></pre>
+      <div class="callout warning">
+        <div class="callout-label">Time Cost</div>
+        <p>The fix takes seconds. Chasing the bogus UTF-8 error without knowing about null bytes can take a quarter of an afternoon.</p>
+      </div>
+    </section>
+
+    <!-- CH 11 -->
+    <section id="s12">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 11</span></div>
+        <div>
+          <div class="section-eyebrow">Part III — Check Scripts that Teach</div>
+          <h2 class="section-title">Make every check teach.</h2>
+        </div>
+      </div>
+      <p>A check script's job is not to determine pass or fail. Its job is to teach the learner what they got wrong and how to fix it.</p>
+      <p>The default pattern — chaining every assertion into one expression and emitting a single generic message on failure — satisfies the platform's contract but fails the learner. The granular pattern runs each assertion independently and on each failure emits a specific remediation message that names the exact command the learner needs to run:</p>
+      <pre><code>if ! psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='analyst'" | grep -q 1; then
+  fail-message "User 'analyst' does not exist. Run: CREATE USER analyst WITH PASSWORD 'changeme';"
+  exit 1
+fi
+
+if ! psql -tAc "SELECT has_table_privilege('analyst', 'orders', 'SELECT')" | grep -q t; then
+  fail-message "User 'analyst' lacks SELECT on orders. Run: GRANT SELECT ON orders TO analyst;"
+  exit 1
+fi</code></pre>
+      <div class="core-idea"><p>A learner reads the assignment once. They read failed check messages every time they iterate. Spend the time on the messages.</p></div>
+    </section>
+
+    <!-- CH 12 -->
+    <section id="s13">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 12</span></div>
+        <div>
+          <div class="section-eyebrow">Part III — Check Scripts that Teach</div>
+          <h2 class="section-title">Do not use container-only helpers on a VM.</h2>
+        </div>
+      </div>
+      <p>Two of the most useful Instruqt agent helpers — <code>fail-message</code> and <code>set-status</code> — are container-only. Calling either inside a check script on a VM will exit with status 127, and the platform will render a generic "Something went wrong" modal with no cause. Authors who developed against a container template and ported the same check script to a VM can spend hours staring at scripts that "worked yesterday."</p>
+      <p>On VM-based tracks, fall back to plain <code>echo</code> for failure messages and <code>exit 1</code> to fail:</p>
+      <pre><code># On a VM — no fail-message available
+if ! systemctl is-active --quiet myservice; then
+  echo "myservice is not running. Run: systemctl start myservice"
+  exit 1
+fi</code></pre>
+      <p>The styled UI hint is lost, but the message still surfaces in the Instruqt debug log, and you avoid a mystery.</p>
+    </section>
+
+    <!-- CH 13 -->
+    <section id="s14">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 13</span></div>
+        <div>
+          <div class="section-eyebrow">Part III — Check Scripts that Teach</div>
+          <h2 class="section-title">Validate intent, not intermediate state.</h2>
+        </div>
+      </div>
+      <p>Resources in many tracks progress through multiple states: ingested → classified → enriched → governed. A check script that asserts a <em>specific intermediate state</em> produces false negatives on resources that have legitimately advanced further. The learner's correct work fails the check because it advanced too far.</p>
+      <p>Accept all valid terminal states for the check's intent. If the check is meant to verify that enrichment happened, accept any state at or beyond enrichment:</p>
+      <pre><code>case "$STATUS" in
+  enriched|governed)
+    # both indicate enrichment occurred — pass
+    ;;
+  *)
+    fail-message "Resource has not been enriched yet."
+    exit 1
+    ;;
+esac</code></pre>
+      <div class="rule-block">
+        <div class="rule-label">The General Form</div>
+        <p>A check script's pass condition is a <strong>property of the resource</strong>, not a position in a state machine. Express it as the property.</p>
+      </div>
+    </section>
+
+    <!-- CH 14 -->
+    <section id="s15">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 14</span></div>
+        <div>
+          <div class="section-eyebrow">Part III — Check Scripts that Teach</div>
+          <h2 class="section-title">For certifications, score the work; do not gate it.</h2>
+        </div>
+      </div>
+      <p>Most check scripts emit a binary verdict: pass or fail. For certification or assessment-style tracks, this is the wrong abstraction. A learner who has met seven of eight criteria gets the same response as a learner who has met none, with no way to identify what specifically remains.</p>
+      <p>A scored rubric replaces the binary verdict with a transparent point-based tally. Each assertion is worth N points; the script accumulates a score as it runs; the final output is a scorecard before the script exits 0 or 1 based on a passing threshold.</p>
+      <pre><code>SCORE=0; TOTAL=100
+
+if check_assertion_one; then
+  SCORE=$((SCORE + 15))
+  echo "[PASS] +15 — Resource was tagged correctly"
+else
+  echo "[FAIL]   0 — Resource was not tagged. See section 2."
+fi
+
+# … repeat for each criterion …
+
+echo "Final score: $SCORE / $TOTAL"
+[ "$SCORE" -ge 70 ] && exit 0 || exit 1</code></pre>
+      <p>Certification becomes a coachable scorecard rather than a black box. Learners who fall short know precisely which criteria are still missing and can target their second attempt.</p>
+    </section>
+
+    <!-- CH 15 -->
+    <section id="s16">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 15</span></div>
+        <div>
+          <div class="section-eyebrow">Part IV — Content &amp; Assignment Design</div>
+          <h2 class="section-title">Pair editable code with a reference implementation.</h2>
+        </div>
+      </div>
+      <p>A challenge that drops the learner into an editor with a single starter file gives them only one path forward: figure it out or get stuck. The companion-code-tab pattern fixes this with almost no extra effort. Add a second <code>code</code> tab next to the editable file, pointing at a completed reference implementation written by the setup script:</p>
+      <pre><code>tabs:
+  - title: Edit
+    type: code
+    hostname: workstation
+    path: /root/report.py
+  - title: Reference
+    type: code
+    hostname: workstation
+    path: /root/report_complete.py</code></pre>
+      <p>The pattern works because the reference is <em>visible</em> but not <em>forced</em> — it is a hint the learner reaches for, not a spoiler the platform shoves in their face. Time-on-track drops; completion rates rise.</p>
+      <div class="callout success">
+        <div class="callout-label">Pro Tip</div>
+        <p>Name the reference file something the learner will recognize as "the answer" — <code>report_complete.py</code>, <code>solution.py</code> — rather than something cryptic. The discoverability is the point.</p>
+      </div>
+    </section>
+
+    <!-- CH 16 -->
+    <section id="s17">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 16</span></div>
+        <div>
+          <div class="section-eyebrow">Part IV — Content &amp; Assignment Design</div>
+          <h2 class="section-title">Use HTTPS on every website tab.</h2>
+        </div>
+      </div>
+      <p>A <code>website</code> tab pointing at an <code>http://</code> URL will cause <code>instruqt track push</code> to fail at validation. The failure mode is silent enough that the cause isn't always obvious from the error output. The fix is trivial: every URL in every <code>website</code> tab must be HTTPS.</p>
+      <pre><code>tabs:
+  - title: Vendor docs
+    type: website
+    url: https://docs.example.com   # never http://</code></pre>
+      <div class="callout warning">
+        <div class="callout-label">Do Not</div>
+        <p>Push a track with an <code>http://</code> website tab and hope. The validator does not negotiate. If the destination genuinely cannot serve HTTPS, switch to a <code>service</code> tab or an <code>external</code> tab.</p>
+      </div>
+    </section>
+
+    <!-- CH 17 -->
+    <section id="s18">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 17</span></div>
+        <div>
+          <div class="section-eyebrow">Part IV — Content &amp; Assignment Design</div>
+          <h2 class="section-title">Number challenges sequentially, without gaps.</h2>
+        </div>
+      </div>
+      <p>Challenge directories must be numbered with a leading two-digit prefix — <code>01-</code>, <code>02-</code>, <code>03-</code> — and the order must match the challenge sequence in <code>track.yml</code>. Gaps in the sequence or mismatches between directory order and <code>track.yml</code> order will produce undefined behavior at push time, sometimes erroring, sometimes silently shipping a track with the wrong sequence.</p>
+      <p>When inserting a challenge in the middle of an existing track, renumber every subsequent challenge to keep the sequence dense. When deleting a challenge, renumber the rest.</p>
+      <div class="rule-block">
+        <div class="rule-label">Important</div>
+        <p>The <code>id</code> field assigned by Instruqt is permanent and unaffected by renumbering — only the directory name changes. Treat the leading numbers as <strong>ordering metadata that belongs to the filesystem</strong>, not to the challenge itself.</p>
+      </div>
+    </section>
+
+    <!-- CH 18 -->
+    <section id="s19">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 18</span></div>
+        <div>
+          <div class="section-eyebrow">Part IV — Content &amp; Assignment Design</div>
+          <h2 class="section-title">Add defensive setup at the challenge level.</h2>
+        </div>
+      </div>
+      <p>Even a perfectly designed track can be broken by a learner who skips ahead, hits the "skip" button, or encounters a transient infrastructure failure that leaves a previous challenge's state incomplete. A challenge that depends on state established by an earlier challenge is fragile if it assumes that state is always present.</p>
+      <p>A defensive challenge-level setup script idempotently re-creates the state the previous challenge was supposed to leave behind:</p>
+      <pre><code>#!/bin/bash
+set -euo pipefail
+
+# Re-create the record the previous challenge should have created
+COUNT=$(psql -tAc "SELECT count(*) FROM customers WHERE name='Acme Corp';")
+if [ "$COUNT" -eq 0 ]; then
+  psql &lt;&lt;SQL
+INSERT INTO customers (name, plan, created_at)
+VALUES ('Acme Corp', 'enterprise', NOW());
+SQL
+fi</code></pre>
+      <p>The pattern is: query first, create only if absent. The cost is a few lines per dependent challenge. The payoff is a track that holds up against the messy reality of how learners actually move through it.</p>
+    </section>
+
+    <!-- CH 19 -->
+    <section id="s20">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 19</span></div>
+        <div>
+          <div class="section-eyebrow">Part V — Shipping &amp; Maintenance</div>
+          <h2 class="section-title">Test the whole track end to end before pushing.</h2>
+        </div>
+      </div>
+      <p>Authors who push frequently and test challenge by challenge eventually ship a track that works for every individual challenge but fails when run end to end. The cause is almost always state — challenge two assumes something challenge one set up, and the learner hits the discontinuity even though the author never did, because the author tested challenge two starting from a state they manually established.</p>
+      <p>Before any push that will reach a learner, run the full track from start to finish in a fresh environment. Click through every challenge in order. Use the solve button on each one if you have to, but make sure the entire sequence completes without manual intervention between challenges.</p>
+      <div class="core-idea"><p>This is the single highest-value test you can run, and it is also the test most authors skip because it takes the longest. Skip it only when you are willing to ship a track you have not actually finished.</p></div>
+    </section>
+
+    <!-- CH 20 -->
+    <section id="s21">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">CH 20</span></div>
+        <div>
+          <div class="section-eyebrow">Part V — Shipping &amp; Maintenance</div>
+          <h2 class="section-title">Re-test after every Windows-side edit.</h2>
+        </div>
+      </div>
+      <p>Edits made on a Windows-mounted filesystem can introduce defects that do not exist in the source as you see it: trailing null bytes, line ending mismatches, encoding issues, and permissions glitches that survive the next push. The author opens VSCode, makes a one-line change to fix a typo, pushes, and the track fails to push — or worse, pushes successfully but breaks at runtime.</p>
+      <p>The defensive habit is to treat any edit on a Windows host as a potential source of corruption: strip null bytes (CH 10), normalize line endings, and run <code>instruqt track push</code> against a non-production version to confirm the change validates.</p>
+      <div class="callout warning">
+        <div class="callout-label">The Expensive Thing</div>
+        <p>Shipping a broken track because you trusted that a one-line change couldn't have introduced anything. Build the validation pass into your habits rather than your memory.</p>
+      </div>
+    </section>
+
+    <!-- CLOSING -->
+    <section id="s22">
+      <div class="section-label">
+        <div class="section-pill-wrap"><span class="section-pill">END</span></div>
+        <div><h2 class="section-title">A Closing Note</h2></div>
+      </div>
+      <p>Twenty is not the right number because the world contains exactly twenty principles for building Instruqt tracks. Twenty is the right number because every entry on the list has to earn its place against every other entry, and twenty is the rough threshold where that competition produces real curation. Above twenty-five, the pressure to be selective relaxes and filler creeps in. Below fifteen, the list starts to feel thin.</p>
+      <p>Read this booklet straight through the first time. Then come back to single chapters when you have a specific problem in front of you — a check script that is not behaving, a setup script that runs once and breaks the second time, a push that fails with a message that does not make sense.</p>
+      <p>If you build tracks long enough, you will find your own rules — habits you grew into through your own scars. Add them. Cross out the ones here you have outgrown. The list is not sacred. The discipline of having a list is.</p>
+      <div class="rule-block">
+        <div class="rule-label">First Draft</div>
+        <p>These rules are descriptive. Every one comes from production tracks where the wrong choice produced an actual symptom. They exist so the next author doesn't have to earn them the same way.</p>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /layout -->
+
+<script>
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('section[id]');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navItems.forEach(i => i.classList.remove('active'));
+      const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-15% 0px -80% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
