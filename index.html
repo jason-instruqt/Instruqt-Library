@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instruqt Resource Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple-900: #2e0a6e;
+      --purple-800: #3B0F8C;
+      --purple-700: #5B21B6;
+      --purple-600: #7C3AED;
+      --purple-400: #A78BFA;
+      --purple-200: #DDD6FE;
+      --purple-100: #EDE9FE;
+      --purple-50:  #F5F3FF;
+      --amber-500:  #F59E0B;
+      --amber-50:   #FFFBEB;
+      --green-500:  #10B981;
+      --green-50:   #ECFDF5;
+      --blue-500:   #3B82F6;
+      --blue-50:    #EFF6FF;
+      --dark:       #1E1B2E;
+      --mid:        #4B4569;
+      --light:      #6D6490;
+      --rule:       #DDD6FE;
+      --code-bg:    #F0EDFF;
+      --code-color: #3730A3;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f8f7ff;
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Progress bar ── */
+    #progress {
+      position: fixed; top: 0; left: 0; height: 3px;
+      width: 0; background: var(--purple-400);
+      z-index: 1000; transition: width 0.1s linear;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--purple-900) 0%, var(--purple-800) 45%, var(--purple-700) 100%);
+      padding: 80px 48px 68px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 560px; height: 560px;
+      border-radius: 50%;
+      background: rgba(167,139,250,0.07);
+      top: -220px; right: -120px;
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      background: rgba(167,139,250,0.05);
+      bottom: -120px; left: -80px;
+      pointer-events: none;
+    }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--purple-400);
+      margin-bottom: 18px;
+      animation: fadeUp 0.5s ease 0.05s both;
+    }
+
+    .hero h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 54px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 18px;
+      animation: fadeUp 0.5s ease 0.15s both;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--purple-400);
+    }
+
+    .hero-sub {
+      font-size: 16.5px;
+      color: rgba(255,255,255,0.58);
+      max-width: 520px;
+      margin: 0 auto 42px;
+      line-height: 1.75;
+      animation: fadeUp 0.5s ease 0.25s both;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeUp 0.5s ease 0.35s both;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 12px;
+      padding: 14px 26px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Fraunces', serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--purple-400);
+      margin-top: 5px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Page ── */
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 56px 32px 96px;
+    }
+
+    /* ── Section header ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1.5px solid var(--purple-200);
+    }
+
+    .section-pill {
+      background: var(--purple-600);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 4px 11px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 23px;
+      font-weight: 600;
+      color: var(--dark);
+      flex: 1;
+    }
+
+    .section-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--purple-400);
+      flex-shrink: 0;
+    }
+
+    /* ── Guide cards ── */
+    .guides-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 56px;
+    }
+
+    .guide-card {
+      background: #fff;
+      border: 1.5px solid var(--rule);
+      border-radius: 14px;
+      padding: 24px 26px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .guide-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: linear-gradient(to bottom, var(--purple-600), var(--purple-400));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .guide-card:hover {
+      border-color: var(--purple-400);
+      box-shadow: 0 6px 28px rgba(124,58,237,0.1);
+      transform: translateY(-2px);
+    }
+
+    .guide-card:hover::before { opacity: 1; }
+
+    .guide-type {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--purple-600);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .guide-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--dark);
+      line-height: 1.3;
+    }
+
+    .guide-desc {
+      font-size: 13.5px;
+      color: var(--light);
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    .guide-arrow {
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--purple-600);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: gap 0.15s;
+    }
+
+    .guide-card:hover .guide-arrow { gap: 9px; }
+
+    /* ── Reference cards ── */
+    .ref-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .ref-card {
+      background: #fff;
+      border: 1.5px solid var(--rule);
+      border-radius: 10px;
+      padding: 14px 16px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.18s, box-shadow 0.15s, background 0.15s;
+    }
+
+    .ref-card:hover {
+      border-color: var(--purple-400);
+      background: var(--purple-50);
+      box-shadow: 0 2px 14px rgba(124,58,237,0.07);
+    }
+
+    .ref-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--purple-400);
+      background: var(--purple-50);
+      border: 1px solid var(--purple-200);
+      border-radius: 6px;
+      padding: 4px 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 36px;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .ref-card:hover .ref-num {
+      background: var(--purple-100);
+      border-color: var(--purple-400);
+      color: var(--purple-700);
+    }
+
+    .ref-body { flex: 1; min-width: 0; }
+
+    .ref-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ref-desc {
+      font-size: 11.5px;
+      color: var(--light);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ref-chevron {
+      color: var(--purple-400);
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.15s, transform 0.15s;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .ref-card:hover .ref-chevron {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+
+    /* ── Back to top ── */
+    #btt {
+      position: fixed; bottom: 28px; right: 28px;
+      width: 40px; height: 40px;
+      background: var(--purple-600); color: #fff;
+      border: none; border-radius: 50%; cursor: pointer;
+      font-size: 17px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+      opacity: 0; transform: translateY(8px); pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    #btt.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #btt:hover { background: var(--purple-700); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 28px 32px;
+      font-size: 12px;
+      color: var(--light);
+      border-top: 1px solid var(--rule);
+    }
+
+    footer a {
+      color: var(--purple-600);
+      text-decoration: none;
+    }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      .hero { padding: 56px 24px 48px; }
+      .hero h1 { font-size: 36px; }
+      .page { padding: 36px 16px 64px; }
+      .guides-grid { grid-template-columns: 1fr; }
+      .ref-grid { grid-template-columns: 1fr; }
+      .section-count { display: none; }
+    }
+
+    @media print {
+      #progress, #btt { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<header class="hero">
+  <div class="hero-eyebrow">Instruqt · Resource Library</div>
+  <h1>Book Ideas<br><em>&amp; Field Notes</em></h1>
+  <p class="hero-sub">Guides, cookbooks, and quick-reference pages for building production-quality Instruqt tracks.</p>
+  <div class="hero-stats">
+    <div class="stat-card">
+      <div class="stat-value">14</div>
+      <div class="stat-label">Resources</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">4</div>
+      <div class="stat-label">Guides</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">10</div>
+      <div class="stat-label">References</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">1</div>
+      <div class="stat-label">Library</div>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- GUIDES -->
+  <div class="section-header">
+    <span class="section-pill">Guides</span>
+    <h2 class="section-title">Long-Form Documents</h2>
+    <span class="section-count">4 documents</span>
+  </div>
+
+  <div class="guides-grid">
+
+    <a href="The Instruqt Track Builder's Field Guide_draft1.html" class="guide-card">
+      <div class="guide-type">Field Guide</div>
+      <div class="guide-title">The Instruqt Track Builder's Field Guide</div>
+      <div class="guide-desc">A comprehensive reference covering the full track-building lifecycle — from concept and compute choices through content, scripting, and shipping.</div>
+      <div class="guide-arrow">Open guide &rarr;</div>
+    </a>
+
+    <a href="building-better-instruqt-tracks_draft1.html" class="guide-card">
+      <div class="guide-type">Workshop Guide</div>
+      <div class="guide-title">Building Better Instruqt Tracks</div>
+      <div class="guide-desc">Techniques, patterns, and approaches for elevating track quality across design, content, check scripts, and learner experience.</div>
+      <div class="guide-arrow">Open guide &rarr;</div>
+    </a>
+
+    <a href="pattern-cookbook_draft1.html" class="guide-card">
+      <div class="guide-type">Cookbook</div>
+      <div class="guide-title">Pattern Cookbook</div>
+      <div class="guide-desc">47 recipes covering infrastructure, technique, and authoring patterns — each with a Problem, Solution, Skeleton, Gotchas, and Variations.</div>
+      <div class="guide-arrow">Open cookbook &rarr;</div>
+    </a>
+
+    <a href="decision-trees_draft1.html" class="guide-card">
+      <div class="guide-type">Decision Guide</div>
+      <div class="guide-title">Decision Trees</div>
+      <div class="guide-desc">Visual decision flows for key architectural choices — compute type, tab layout, lifecycle scripting, check design, and more.</div>
+      <div class="guide-arrow">Open guide &rarr;</div>
+    </a>
+
+  </div>
+
+  <!-- REFERENCE -->
+  <div class="section-header">
+    <span class="section-pill">Reference</span>
+    <h2 class="section-title">Quick Reference Pages</h2>
+    <span class="section-count">10 pages</span>
+  </div>
+
+  <div class="ref-grid">
+
+    <a href="01-trackyml.html" class="ref-card">
+      <span class="ref-num">01</span>
+      <div class="ref-body">
+        <div class="ref-title">track.yml</div>
+        <div class="ref-desc">Root configuration file for every track</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="02-configyml.html" class="ref-card">
+      <span class="ref-num">02</span>
+      <div class="ref-body">
+        <div class="ref-title">config.yml</div>
+        <div class="ref-desc">Per-challenge settings and configuration</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="03-env-vars.html" class="ref-card">
+      <span class="ref-num">03</span>
+      <div class="ref-body">
+        <div class="ref-title">Environment Variables</div>
+        <div class="ref-desc">Auto-injected variables in lifecycle scripts</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="04-base-images.html" class="ref-card">
+      <span class="ref-num">04</span>
+      <div class="ref-body">
+        <div class="ref-title">Base Images</div>
+        <div class="ref-desc">Container and VM image selection</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="05-tab-types.html" class="ref-card">
+      <span class="ref-num">05</span>
+      <div class="ref-body">
+        <div class="ref-title">Tab Types</div>
+        <div class="ref-desc">Terminal, editor, website, and service tabs</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="06-code-blocks.html" class="ref-card">
+      <span class="ref-num">06</span>
+      <div class="ref-body">
+        <div class="ref-title">Code Blocks</div>
+        <div class="ref-desc">Formatting options in challenge assignments</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="07-markdown-extensions.html" class="ref-card">
+      <span class="ref-num">07</span>
+      <div class="ref-body">
+        <div class="ref-title">Markdown Extensions</div>
+        <div class="ref-desc">Instruqt-specific syntax and extensions</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="08-lifecycle-scripts.html" class="ref-card">
+      <span class="ref-num">08</span>
+      <div class="ref-body">
+        <div class="ref-title">Lifecycle Scripts</div>
+        <div class="ref-desc">setup, cleanup, solve, and check patterns</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="09-granular-checks.html" class="ref-card">
+      <span class="ref-num">09</span>
+      <div class="ref-body">
+        <div class="ref-title">Granular Checks</div>
+        <div class="ref-desc">Automated pass/fail validation scripts</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+    <a href="10-variables.html" class="ref-card">
+      <span class="ref-num">10</span>
+      <div class="ref-body">
+        <div class="ref-title">Variables</div>
+        <div class="ref-desc">Dynamic content and variable injection</div>
+      </div>
+      <span class="ref-chevron">&#8250;</span>
+    </a>
+
+  </div>
+
+</div>
+
+<footer>
+  Instruqt Resource Library &mdash; Built with the Longform &amp; Cookbook design system
+</footer>
+
+<button id="btt" title="Back to top">&#8593;</button>
+
+<script>
+  const progress = document.getElementById('progress');
+  const btt = document.getElementById('btt');
+
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    progress.style.width = (pct * 100) + '%';
+    btt.classList.toggle('show', window.scrollY > 300);
+  });
+
+  btt.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+</script>
+
+</body>
+</html>
