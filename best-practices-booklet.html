@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Building Better Instruqt Tracks — Booklet</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&amp;family=DM+Mono:wght@400;500&amp;family=Fraunces:ital,wght@0,300;0,600;0,700;1,300;1,400&amp;display=swap" rel="stylesheet"/>
+<style>
+    /* ═════════════════════════════════════════════════════════════
+       DESIGN SYSTEM v2 — Best Practices Booklet
+       Signature move: 180px margin gutter on wide viewports carrying
+       principle numeral (huge Fraunces), summary, related cross-refs,
+       optional time-cost badge. Collapses inline on mobile.
+       ═════════════════════════════════════════════════════════════ */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── Purple ramp (cool — primary brand) ── */
+      --purple-900: #2e0a6e;
+      --purple-800: #3B0F8C;
+      --purple-700: #5B21B6;
+      --purple-600: #7C3AED;
+      --purple-400: #A78BFA;
+      --purple-300: #C4B5FD;
+      --purple-200: #DDD6FE;
+      --purple-100: #EDE9FE;
+      --purple-50:  #F5F3FF;
+
+      /* ── Ink ramp (warm-shifted dark — editorial accent) ── */
+      --ink-900: #1A1330;
+      --ink-700: #2A1F4D;
+      --ink-500: #4F4275;
+      --ink-300: #8D86A8;
+
+      /* ── Neutrals ── */
+      --dark:  #1E1B2E;
+      --mid:   #4B4569;
+      --light: #6D6490;
+      --rule:  #DDD6FE;
+
+      /* ── Code ── */
+      --code-bg:    #F0EDFF;
+      --code-color: #3730A3;
+
+      /* ── Dark code palette (shared via tokens — Cookbook canonical) ── */
+      --code-dark-bg:     #16161F;
+      --code-dark-bg-2:   #1A1A28;
+      --code-dark-border: #2D2D3F;
+      --code-dark-text:   #C9D1D9;
+
+      /* ── Semantic accents ── */
+      --amber-500: #F59E0B; --amber-50: #FFFBEB; --amber-900: #92400E;
+      --green-500: #10B981; --green-50: #ECFDF5; --green-900: #065F46;
+      --blue-500:  #3B82F6; --blue-50:  #EFF6FF; --blue-900:  #1E40AF;
+
+      /* ── Derived hover tones via color-mix ── */
+      --purple-600-hover: color-mix(in oklch, var(--purple-600), white 12%);
+      --purple-50-deep:   color-mix(in oklch, var(--purple-50), var(--purple-100) 60%);
+
+      /* ── Shadow system (two-layer, purple-tinted) ── */
+      --shadow-close:    0 1px 2px rgba(46, 10, 110, 0.05);
+      --shadow-ambient:  0 8px 24px -8px rgba(46, 10, 110, 0.08);
+      --shadow-resting:  var(--shadow-close), var(--shadow-ambient);
+      --shadow-elevated:
+        0 2px 4px -1px rgba(46, 10, 110, 0.08),
+        0 16px 40px -12px rgba(46, 10, 110, 0.18);
+      --shadow-button:   0 4px 16px rgba(124, 58, 237, 0.35);
+
+      /* ── Focus ring ── */
+      --focus-ring: 0 0 0 3px rgba(167, 139, 250, 0.35);
+
+      /* ── Container ── */
+      --sidebar-w:   240px;
+      --max-w:       720px;       /* tighter — gutter sits beside */
+      --gutter-w:    200px;
+      --hero-max-w:  760px;       /* hero-inner needs its own bespoke max */
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #fff;
+      color: var(--mid);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    *:focus { outline: none; }
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      box-shadow: var(--focus-ring);
+      border-radius: 6px;
+    }
+    html { scroll-behavior: smooth; }
+
+    #progress {
+      position: fixed; top: 0; left: 0;
+      height: 3px; width: 0;
+      background: linear-gradient(90deg, var(--purple-600), var(--purple-400));
+      z-index: 1000;
+      transition: width 0.1s linear;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Layout ── */
+    .layout { display: flex; min-height: 100vh; }
+    .main { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
+    .content { padding: 48px 48px 80px; }
+    .content-inner {
+      max-width: calc(var(--max-w) + var(--gutter-w) + 48px);
+      margin: 0 auto;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--ink-900) 0%, var(--purple-800) 100%);
+      overflow-y: auto;
+      padding-bottom: 32px;
+    }
+    .sidebar-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 18px 24px 6px;
+      padding: 7px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font: 500 10.5px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s;
+      width: fit-content;
+    }
+    .sidebar-back:hover {
+      color: #fff;
+      border-color: var(--purple-400);
+      background: rgba(167, 139, 250, 0.12);
+      transform: translateX(-2px);
+    }
+    .sidebar-back .back-arrow {
+      font-size: 13px;
+      color: var(--purple-400);
+      transition: transform 0.15s;
+    }
+    .sidebar-back:hover .back-arrow { transform: translateX(-2px); }
+
+    .sidebar-logo {
+      display: inline-block;
+      margin: 18px 24px 10px;
+      padding: 4px 9px;
+      background: var(--purple-400);
+      color: var(--ink-900);
+      font: 700 9px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 4px;
+    }
+    .sidebar-title {
+      padding: 0 24px 22px;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.005em;
+    }
+    .nav-group-label {
+      padding: 16px 24px 6px;
+      font: 700 9px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(167, 139, 250, 0.85);
+    }
+    .nav-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 8px 24px 8px 22px;
+      border-left: 2px solid transparent;
+      color: rgba(255, 255, 255, 0.65);
+      text-decoration: none;
+      font: 400 12.5px/1.4 'DM Sans', sans-serif;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .nav-num {
+      color: var(--purple-400);
+      font-weight: 700;
+      font-size: 11px;
+      min-width: 40px;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.06);
+      border-left-color: var(--purple-400);
+      color: #fff;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, var(--ink-900) 0%, var(--purple-900) 30%, var(--purple-800) 65%, var(--purple-700) 100%);
+      padding: 80px 60px 64px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 540px; height: 540px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(167,139,250,0.1), transparent 70%);
+      top: -200px; right: -150px;
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(167,139,250,0.06), transparent 70%);
+      bottom: -100px; left: -100px;
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: var(--hero-max-w);
+      position: relative;
+      z-index: 1;
+    }
+    .hero-series {
+      font: 700 10.5px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--purple-400);
+      margin-bottom: 18px;
+      animation: fadeUp 0.6s ease 0.05s both;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(38px, 5.5vw, 56px);
+      font-weight: 700;
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 18px;
+      letter-spacing: -0.015em;
+      animation: fadeUp 0.6s ease 0.12s both;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--purple-400);
+      display: block;
+    }
+    .hero-tagline {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 17px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.65);
+      max-width: 580px;
+      margin-bottom: 36px;
+      animation: fadeUp 0.6s ease 0.24s both;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      animation: fadeUp 0.6s ease 0.32s both;
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 18px 20px;
+      backdrop-filter: blur(6px);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(167, 139, 250, 0.4);
+      transform: translateY(-1px);
+    }
+    .stat-value {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+    .stat-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.58);
+      margin-top: 5px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: linear-gradient(135deg, var(--purple-50), #fff);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin: 28px 0 44px;
+      box-shadow: var(--shadow-close);
+    }
+    .toc-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--purple-700);
+      margin-bottom: 16px;
+    }
+    .toc-group-label {
+      font: 700 10px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--purple-700);
+      margin: 18px 0 8px;
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 18px;
+    }
+    .toc-link, .toc-solo {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 4px 0;
+      text-decoration: none;
+      color: var(--mid);
+      font-size: 13.5px;
+      transition: color 0.2s;
+    }
+    .toc-link-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple-600);
+      letter-spacing: 0.04em;
+      min-width: 36px;
+      font-variant-numeric: tabular-nums;
+    }
+    .toc-link:hover, .toc-solo:hover { color: var(--purple-800); }
+
+    /* ════════════════════════════════════════════════════════════════
+       CHAPTER WITH MARGIN GUTTER — Booklet signature
+       Wide viewports: chapter body + 200px gutter as grid columns.
+       Narrow viewports: gutter collapses inline above the chapter body.
+       ════════════════════════════════════════════════════════════════ */
+    .chapter {
+      margin: 56px 0 0;
+    }
+    .chapter:first-of-type { margin-top: 28px; }
+
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: minmax(0, var(--max-w)) var(--gutter-w);
+      gap: 48px;
+      align-items: start;
+    }
+    .ch-body { min-width: 0; }
+    .ch-gutter {
+      position: sticky;
+      top: 80px;
+      padding-top: 10px;
+    }
+
+    .gutter-num {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 72px;
+      font-weight: 300;
+      color: var(--ink-300);
+      line-height: 0.9;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .gutter-summary {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 14px;
+      color: var(--ink-700);
+      line-height: 1.5;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--purple-200);
+      margin-bottom: 14px;
+    }
+    .gutter-label {
+      font: 700 9px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-500);
+      margin-bottom: 8px;
+    }
+    .gutter-related {
+      margin-bottom: 16px;
+    }
+    .gutter-related a {
+      display: block;
+      font-size: 11.5px;
+      color: var(--purple-700);
+      text-decoration: none;
+      padding: 3px 0;
+      transition: color 0.2s, transform 0.15s;
+    }
+    .gutter-related a:hover {
+      color: var(--purple-900);
+      transform: translateX(2px);
+    }
+    .gutter-related .ref-num-inline {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--purple-400);
+      margin-right: 6px;
+    }
+    .gutter-cost {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      background: var(--amber-50);
+      border: 1px solid #FCD34D;
+      border-radius: 6px;
+      font: 600 10.5px/1 'DM Sans', sans-serif;
+      color: var(--amber-900);
+      letter-spacing: 0.02em;
+    }
+    .gutter-cost::before {
+      content: '⏱';
+      font-size: 12px;
+    }
+
+    /* ── Section label (per chapter — sits inside .ch-body) ── */
+    .section-label {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: start;
+      border-bottom: 1.5px solid var(--purple-200);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+    .section-pill {
+      background: var(--purple-600);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 11px;
+      border-radius: 20px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    }
+    .section-eyebrow {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 13px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--purple-400);
+      margin-bottom: 4px;
+    }
+    .section-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--ink-900);
+      line-height: 1.2;
+      letter-spacing: -0.005em;
+    }
+
+    /* ── Body ── */
+    .ch-body p {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--mid);
+      margin: 14px 0;
+    }
+    .ch-body p strong { color: var(--ink-900); font-weight: 600; }
+    .ch-body p em { font-style: italic; }
+    .ch-body h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-900);
+      margin: 24px 0 8px;
+    }
+
+    /* ── Inline code ── */
+    code {
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 500;
+      background: var(--code-bg);
+      color: var(--code-color);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── Light code blocks ── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--purple-200);
+      border-left: 3px solid var(--purple-600);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin: 16px 0;
+      overflow-x: auto;
+      box-shadow: var(--shadow-close);
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      color: var(--code-color);
+      line-height: 1.7;
+    }
+
+    /* ── Lists ── */
+    .ch-body ul, .ch-body ol {
+      list-style: none;
+      counter-reset: ol-counter;
+      padding-left: 0;
+      margin: 14px 0;
+    }
+    .ch-body ul li, .ch-body ol li {
+      position: relative;
+      padding: 4px 0 4px 22px;
+      font-size: 15px;
+      color: var(--mid);
+      line-height: 1.65;
+    }
+    .ch-body ul li::before {
+      content: '•';
+      position: absolute;
+      left: 6px;
+      top: 4px;
+      color: var(--purple-600);
+      font-weight: 700;
+    }
+    .ch-body ol li { counter-increment: ol-counter; }
+    .ch-body ol li::before {
+      content: counter(ol-counter) '.';
+      position: absolute;
+      left: 2px;
+      top: 4px;
+      color: var(--purple-600);
+      font-weight: 700;
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      border-left: 3px solid var(--purple-600);
+      background: var(--purple-50);
+      border-radius: 0 10px 10px 0;
+      padding: 16px 20px;
+      margin: 16px 0;
+      box-shadow: var(--shadow-close);
+    }
+    .callout.warning { border-left-color: var(--amber-500); background: var(--amber-50); }
+    .callout.success { border-left-color: var(--green-500); background: var(--green-50); }
+    .callout-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      color: var(--purple-700);
+    }
+    .callout.warning .callout-label { color: var(--amber-900); }
+    .callout.success .callout-label { color: var(--green-900); }
+    .callout p { font-size: 14px; margin: 0; line-height: 1.65; }
+    .callout p + p { margin-top: 8px; }
+
+    /* ── Pitfall list ── */
+    .pitfall-list {
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 20px 0;
+      box-shadow: var(--shadow-close);
+    }
+    .pitfall {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      border-bottom: 1px solid var(--rule);
+      transition: background 0.2s;
+    }
+    .pitfall:last-child { border-bottom: none; }
+    .pitfall:hover { background: var(--purple-50); }
+    .pitfall-num {
+      background: linear-gradient(135deg, var(--purple-50), #fff);
+      border-right: 1px solid var(--rule);
+      color: var(--purple-300, var(--purple-400));
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pitfall-content { padding: 16px 20px; }
+    .pitfall-trap {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink-900);
+      margin-bottom: 5px;
+    }
+    .pitfall-fix {
+      font-size: 13px;
+      color: var(--mid);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* ── Rule block ── */
+    .rule-block {
+      background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+      border: 1px solid var(--purple-200);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin: 20px 0;
+      box-shadow: var(--shadow-close);
+    }
+    .rule-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--purple-700);
+      margin-bottom: 10px;
+    }
+    .rule-block p {
+      font-size: 14.5px;
+      color: var(--ink-700);
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    /* ── Core idea ── */
+    .core-idea {
+      position: relative;
+      background: linear-gradient(135deg, var(--purple-100), var(--purple-50));
+      border-radius: 14px;
+      padding: 32px 36px;
+      margin: 24px 0;
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 19px;
+      line-height: 1.5;
+      color: var(--purple-700);
+      max-width: 600px;
+      overflow: hidden;
+      box-shadow: var(--shadow-close);
+    }
+    .core-idea::before {
+      content: '"';
+      position: absolute;
+      top: -12px; right: 18px;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 130px;
+      font-weight: 700;
+      color: var(--purple-200);
+      pointer-events: none;
+    }
+
+    /* ── Back to top ── */
+    #btt {
+      position: fixed; bottom: 28px; right: 28px;
+      width: 44px; height: 44px;
+      background: var(--purple-600); color: #fff;
+      border: none; border-radius: 50%; cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-button);
+      opacity: 0; transform: translateY(8px); pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s, background 0.2s;
+      z-index: 100;
+    }
+    #btt.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #btt:hover { background: var(--purple-700); transform: translateY(-2px); }
+    #btt:active { transform: translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      /* Gutter collapses inline ABOVE the chapter body */
+      .chapter-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      .ch-gutter {
+        position: static;
+        padding-top: 0;
+        margin-bottom: 20px;
+        padding: 18px 22px;
+        background: linear-gradient(135deg, var(--purple-50), #fff);
+        border: 1px solid var(--purple-200);
+        border-radius: 14px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 16px 22px;
+        align-items: start;
+      }
+      .gutter-num {
+        font-size: 56px;
+        margin-bottom: 0;
+        grid-row: 1 / 4;
+      }
+      .gutter-summary {
+        font-size: 13.5px;
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+      }
+      .gutter-related, .gutter-cost { grid-column: 2; }
+    }
+    @media (max-width: 800px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .hero { padding: 52px 28px 44px; }
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .toc-grid { grid-template-columns: 1fr; }
+      .content { padding: 32px 22px 64px; }
+    }
+
+    @media print {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      #progress, #btt { display: none; }
+      body { background: #fff; }
+      .chapter-grid { grid-template-columns: 1fr; gap: 0; }
+      .ch-gutter {
+        position: static;
+        padding: 12px;
+        background: var(--purple-50);
+        border: 0.5px solid var(--purple-200);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px 16px;
+      }
+      .gutter-num { font-size: 48px; }
+      .hero {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .pitfall, .callout, .rule-block, .core-idea, pre { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="layout">
+<!-- ════════════════════════════════════════════════════════════════
+       SIDEBAR
+       ════════════════════════════════════════════════════════════════ -->
+<nav class="sidebar">
+<a class="sidebar-back" href="./index.html">
+<span aria-hidden="true" class="back-arrow">←</span> Library
+    </a>
+<span class="sidebar-logo">Instruqt</span>
+<!-- Sidebar title: one or two lines OK. Use <br> to break. -->
+<div class="sidebar-title">Building Better Instruqt Tracks</div>
+
+    <a class="nav-item" href="#s-pre"><span class="nav-num">PRE</span> What This Is</a>
+
+    <div class="nav-group-label">Part I — Architecture and infrastructure</div>
+    <a class="nav-item" href="#s1"><span class="nav-num">01</span> Choose the lightest compute that works.</a>
+    <a class="nav-item" href="#s2"><span class="nav-num">02</span> Use the right base image for your cloud usage.</a>
+    <a class="nav-item" href="#s3"><span class="nav-num">03</span> Reach for a sandbox preset before building from scratch.</a>
+    <a class="nav-item" href="#s4"><span class="nav-num">04</span> Pre-pull Docker images in setup, never inside a challenge.</a>
+    <a class="nav-item" href="#s5"><span class="nav-num">05</span> Co-host portals and APIs on a single proxy endpoint.</a>
+    <a class="nav-item" href="#s6"><span class="nav-num">06</span> Keep credentials out of environment:; everything goes in secrets:.</a>
+
+    <div class="nav-group-label">Part II — Lifecycle scripts</div>
+    <a class="nav-item" href="#s7"><span class="nav-num">07</span> Wait for readiness, not just for running.</a>
+    <a class="nav-item" href="#s8"><span class="nav-num">08</span> Wrap every subprocess call in a check script.</a>
+    <a class="nav-item" href="#s9"><span class="nav-num">09</span> Make solve scripts idempotent and complete.</a>
+    <a class="nav-item" href="#s10"><span class="nav-num">10</span> Guard your idempotent renames.</a>
+    <a class="nav-item" href="#s11"><span class="nav-num">11</span> Strip null bytes after editing on a Windows host.</a>
+    <a class="nav-item" href="#s12"><span class="nav-num">12</span> Plan cleanup the moment you provision an external resource.</a>
+    <a class="nav-item" href="#s13"><span class="nav-num">13</span> Watch the silent shebang traps.</a>
+
+    <div class="nav-group-label">Part III — Check scripts that teach</div>
+    <a class="nav-item" href="#s14"><span class="nav-num">14</span> Make every check teach.</a>
+    <a class="nav-item" href="#s15"><span class="nav-num">15</span> Helper availability is image-dependent — guard accordingly.</a>
+    <a class="nav-item" href="#s16"><span class="nav-num">16</span> Validate intent, not intermediate state.</a>
+    <a class="nav-item" href="#s17"><span class="nav-num">17</span> For certifications, score the work; do not gate it.</a>
+
+    <div class="nav-group-label">Part IV — Content and assignment design</div>
+    <a class="nav-item" href="#s18"><span class="nav-num">18</span> Pair editable code with a reference implementation.</a>
+    <a class="nav-item" href="#s19"><span class="nav-num">19</span> Use HTTPS on every website tab.</a>
+    <a class="nav-item" href="#s20"><span class="nav-num">20</span> Number challenges sequentially, without gaps.</a>
+    <a class="nav-item" href="#s21"><span class="nav-num">21</span> Add defensive setup at the challenge level.</a>
+    <a class="nav-item" href="#s22"><span class="nav-num">22</span> Match the code-block language tag to what&#x27;s actually executing.</a>
+
+    <div class="nav-group-label">Part V — Shipping and maintenance</div>
+    <a class="nav-item" href="#s23"><span class="nav-num">23</span> Test the whole track end to end before pushing.</a>
+    <a class="nav-item" href="#s24"><span class="nav-num">24</span> Re-test after every Windows-side edit.</a>
+    <a class="nav-item" href="#s25"><span class="nav-num">25</span> Maintain a track-level MEMORY.md as a living build log.</a>
+
+    <a class="nav-item" href="#s-end" style="margin-top:16px;"><span class="nav-num">END</span> A Closing Note</a>
+
+</nav>
+<main class="main">
+<!-- ════════════════════════════════════════════════════════════════
+         HERO
+         ════════════════════════════════════════════════════════════════ -->
+<header class="hero">
+<div class="hero-inner">
+<div class="hero-series">Best Practices Booklet</div>
+<h1>Building Better Instruqt Tracks<br/><em>Twenty-five principles for tracks that work in production</em></h1>
+<p class="hero-tagline">25 principles for tracks that work in production.</p>
+<div class="hero-stats">
+<div class="stat-card">
+<div class="stat-value">5</div>
+<div class="stat-label">Parts</div>
+</div>
+<div class="stat-card">
+<div class="stat-value">25</div>
+<div class="stat-label">Principles</div>
+</div>
+<div class="stat-card">
+<div class="stat-value">100%</div>
+<div class="stat-label">From Production</div>
+</div>
+<div class="stat-card">
+<div class="stat-value">1</div>
+<div class="stat-label">Booklet</div>
+</div>
+</div>
+</div>
+</header>
+<div class="content">
+<div class="content-inner">
+        <div class="toc">
+          <div class="toc-title">In this booklet</div>
+
+          <a class="toc-solo" href="#s-pre"><span class="toc-link-num">PRE</span> What This Is</a>
+
+          <div class="toc-group-label">Part I — Architecture and infrastructure</div>
+          <div class="toc-grid">
+            <a class="toc-link" href="#s1"><span class="toc-link-num">01</span> Choose the lightest compute that works.</a>
+            <a class="toc-link" href="#s2"><span class="toc-link-num">02</span> Use the right base image for your cloud usage.</a>
+            <a class="toc-link" href="#s3"><span class="toc-link-num">03</span> Reach for a sandbox preset before building from scratch.</a>
+            <a class="toc-link" href="#s4"><span class="toc-link-num">04</span> Pre-pull Docker images in setup, never inside a challenge.</a>
+            <a class="toc-link" href="#s5"><span class="toc-link-num">05</span> Co-host portals and APIs on a single proxy endpoint.</a>
+            <a class="toc-link" href="#s6"><span class="toc-link-num">06</span> Keep credentials out of environment:; everything goes in secrets:.</a>
+          </div>
+
+          <div class="toc-group-label">Part II — Lifecycle scripts</div>
+          <div class="toc-grid">
+            <a class="toc-link" href="#s7"><span class="toc-link-num">07</span> Wait for readiness, not just for running.</a>
+            <a class="toc-link" href="#s8"><span class="toc-link-num">08</span> Wrap every subprocess call in a check script.</a>
+            <a class="toc-link" href="#s9"><span class="toc-link-num">09</span> Make solve scripts idempotent and complete.</a>
+            <a class="toc-link" href="#s10"><span class="toc-link-num">10</span> Guard your idempotent renames.</a>
+            <a class="toc-link" href="#s11"><span class="toc-link-num">11</span> Strip null bytes after editing on a Windows host.</a>
+            <a class="toc-link" href="#s12"><span class="toc-link-num">12</span> Plan cleanup the moment you provision an external resource.</a>
+            <a class="toc-link" href="#s13"><span class="toc-link-num">13</span> Watch the silent shebang traps.</a>
+          </div>
+
+          <div class="toc-group-label">Part III — Check scripts that teach</div>
+          <div class="toc-grid">
+            <a class="toc-link" href="#s14"><span class="toc-link-num">14</span> Make every check teach.</a>
+            <a class="toc-link" href="#s15"><span class="toc-link-num">15</span> Helper availability is image-dependent — guard accordingly.</a>
+            <a class="toc-link" href="#s16"><span class="toc-link-num">16</span> Validate intent, not intermediate state.</a>
+            <a class="toc-link" href="#s17"><span class="toc-link-num">17</span> For certifications, score the work; do not gate it.</a>
+          </div>
+
+          <div class="toc-group-label">Part IV — Content and assignment design</div>
+          <div class="toc-grid">
+            <a class="toc-link" href="#s18"><span class="toc-link-num">18</span> Pair editable code with a reference implementation.</a>
+            <a class="toc-link" href="#s19"><span class="toc-link-num">19</span> Use HTTPS on every website tab.</a>
+            <a class="toc-link" href="#s20"><span class="toc-link-num">20</span> Number challenges sequentially, without gaps.</a>
+            <a class="toc-link" href="#s21"><span class="toc-link-num">21</span> Add defensive setup at the challenge level.</a>
+            <a class="toc-link" href="#s22"><span class="toc-link-num">22</span> Match the code-block language tag to what&#x27;s actually executing.</a>
+          </div>
+
+          <div class="toc-group-label">Part V — Shipping and maintenance</div>
+          <div class="toc-grid">
+            <a class="toc-link" href="#s23"><span class="toc-link-num">23</span> Test the whole track end to end before pushing.</a>
+            <a class="toc-link" href="#s24"><span class="toc-link-num">24</span> Re-test after every Windows-side edit.</a>
+            <a class="toc-link" href="#s25"><span class="toc-link-num">25</span> Maintain a track-level MEMORY.md as a living build log.</a>
+          </div>
+
+          <a class="toc-solo" href="#s-end" style="margin-top:14px;border-top:1px solid var(--rule);padding-top:14px;">
+            <span class="toc-link-num">END</span> A Closing Note
+          </a>
+        </div>
+
+        <section id="s-pre" class="chapter">
+          <div class="chapter-grid" style="grid-template-columns: minmax(0, 1fr); gap: 0;">
+            <div class="ch-body" style="max-width: var(--max-w);">
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">PRE</span></div>
+                <div class="section-title-block">
+                  <h2 class="section-title">What This Is</h2>
+                </div>
+              </div>
+
+              <p>This booklet is a short, opinionated set of rules for authors of Instruqt tracks. It is not a tutorial, a reference, or a survey of what is possible. It is a list of habits that distinguish tracks that ship cleanly from tracks that fight their author at every step.</p>
+              <p>Each principle is stated as a single sentence, followed by a paragraph or two explaining why it earns its place on this list. Where a code snippet helps, one is included. The principles are organized into five themes — architecture, lifecycle scripts, check scripts, content design, and shipping — but they are meant to be readable in any order. Read them straight through the first time. Come back to a single page when you have a specific problem in front of you.</p>
+              <p>These rules are descriptive, not invented. Every one of them comes from production tracks where the wrong choice produced an actual symptom: a silent push failure, a learner stuck on a check that gave no useful feedback, a setup script that worked once and broke on every subsequent run, a credential committed to a repo and discovered weeks later. The rules are short because the symptoms were long.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="s1" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">01</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part I — Architecture and infrastructure</div>
+                  <h2 class="section-title">Choose the lightest compute that works.</h2>
+                </div>
+              </div>
+
+              <p>The default of &quot;what I used last time&quot; is how tracks end up overprovisioned, slow to start, or unable to host the very tool they were built to demonstrate. The platform offers three compute primitives — containers, virtual machines, and sandbox presets — and they differ by an order of magnitude in boot time, capability, and maintenance burden.</p>
+              <p>Containers boot in under thirty seconds and ship with the Instruqt agent helpers built in. VMs boot in over a minute and require you to install or inherit your own tooling. Custom GCP images boot fast but commit you to maintaining the image as the underlying product evolves. Reach for a VM only when you genuinely need a display server, a real kernel, nested virtualization, or a heavy set of preinstalled dependencies. Reach for a custom image only when those dependencies are too heavy to install at setup time. Reach for a sandbox preset, when one exists, before any of the above.</p>
+              <p>The mistake is reaching for a heavier primitive without a specific reason. In doubt: start with the lightest option that meets your requirements and escalate only when a concrete need appears.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">01</div>
+              <div class="gutter-summary">The default of &quot;what I used last time&quot; is how tracks end up overprovisioned, slow to start, or unable to host the very tool they were built to demonstrate.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s2" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">02</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part I — Architecture and infrastructure</div>
+                  <h2 class="section-title">Use the right base image for your cloud usage.</h2>
+                </div>
+              </div>
+
+              <p>The two most-used Instruqt container base images differ enough in size and contents that the wrong choice imposes a real cost. The lighter image — a minimal shell environment — boots fast but ships with almost nothing a cloud-account track needs. The heavier cloud-client image carries the AWS, Azure, and GCP CLIs preinstalled, plus common scripting tools. The trap is reaching for the lighter image, wiring up an <code>aws_accounts</code> block, and then watching the learner type <code>aws s3 ls</code> on a container that has no <code>aws</code> binary on the path.</p>
+              <p>The fix is one of two: switch to the cloud-client image and accept the slightly longer pull time, or install the CLI in the track-level setup script before any challenge runs.</p>
+              <pre class="codeblock"><code class="lang-bash"># In track_scripts/setup-workstation, when staying on the lighter image
+curl -sSL &quot;https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip&quot; -o /tmp/awscli.zip
+unzip -q /tmp/awscli.zip -d /tmp
+/tmp/aws/install</code></pre>
+              <p>Both choices are valid. The first is faster to write; the second keeps your boot footprint small if you only need one cloud&#x27;s tooling. The wrong choice is the one where you discover the problem from a learner&#x27;s terminal output during a live demo.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">02</div>
+              <div class="gutter-summary">The two most-used Instruqt container base images differ enough in size and contents that the wrong choice imposes a real cost.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s3" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">03</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part I — Architecture and infrastructure</div>
+                  <h2 class="section-title">Reach for a sandbox preset before building from scratch.</h2>
+                </div>
+              </div>
+
+              <p>When a vendor whose product your track demonstrates has packaged that product as an Instruqt sandbox preset, use the preset. Skipping <code>config.yml</code> and <code>track_scripts/</code> entirely removes a category of failure modes — boot timing, image pulls, agent installation, environment variable injection — and lets you focus on assignment content rather than environment provisioning.</p>
+              <p>The trade-off is that you cannot modify a preset. If you need a custom dataset, a third-party CLI, or an additional exposed port, you have to switch back to a <code>config.yml</code>-based design.</p>
+              <p>A useful threshold: if the preset is a 90% fit for your track, use it and design around the 10%. If it is a 60% fit, build the environment yourself. The middle ground tends to produce tracks that fight the platform — half-preset, half-custom, with an integration seam that turns into the source of every bug.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">03</div>
+              <div class="gutter-summary">When a vendor whose product your track demonstrates has packaged that product as an Instruqt sandbox preset, use the preset.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s4" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">04</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part I — Architecture and infrastructure</div>
+                  <h2 class="section-title">Pre-pull Docker images in setup, never inside a challenge.</h2>
+                </div>
+              </div>
+
+              <p>Tracks that orchestrate multiple Docker containers on a workstation VM — for example, those using <code>docker compose up</code> to bring up a stack of services — pay a hidden tax if the images are pulled lazily during a challenge. A learner&#x27;s first command becomes a several-minute wait while images download, often without a clear progress indicator. Worse, if the pull fails (network, registry rate limits), the failure surfaces as a generic command error rather than a recognizable &quot;image not pulled yet&quot; condition.</p>
+              <p>Pre-pull every image you know the track will use during the track-level setup script, in parallel:</p>
+              <pre class="codeblock"><code class="lang-bash">docker pull example.com/service-a:1.4 &amp;
+docker pull example.com/service-b:1.4 &amp;
+docker pull example.com/service-c:1.4 &amp;
+wait</code></pre>
+              <p>By the time the learner reaches the challenge, the images are local and the only delay is container startup. If a pull is going to fail, you want it to fail visibly during setup — where you can see it and add retries — not during the demo.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">04</div>
+              <div class="gutter-summary">Tracks that orchestrate multiple Docker containers on a workstation VM — for example, those using docker compose up to bring up a stack of services — pay a hidden tax if the images are pulled lazily…</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s5" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">05</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part I — Architecture and infrastructure</div>
+                  <h2 class="section-title">Co-host portals and APIs on a single proxy endpoint.</h2>
+                </div>
+              </div>
+
+              <p>A common track shape pairs a portal page (HTML, sometimes with JavaScript) with a backend API the portal calls. The naïve architecture serves the portal on one container&#x27;s port and the API on another&#x27;s, then exposes both as separate <code>service</code> tabs. This works in the terminal — <code>curl</code> against the API hostname succeeds — but breaks the moment the portal&#x27;s JavaScript tries to call the API. The learner&#x27;s browser is talking to Instruqt&#x27;s proxy, not your Docker network, and an absolute URL pointing at an internal hostname will fail with no usable error.</p>
+              <p>Serve both surfaces from the same hostname and the same port, routing by URL prefix on the server side. A single uvicorn or Flask process can handle the portal at <code>/</code> and the API at <code>/api/*</code>. From the browser&#x27;s perspective, every <code>fetch(&#x27;/api/...&#x27;)</code> call routes back through the same proxy endpoint that served the page — relative paths just work, and the entire class of cross-origin headaches disappears.</p>
+              <p>The architectural simplicity is worth the small amount of extra wiring on the server side. If you remember nothing else about service tabs, remember this: <strong>one proxy endpoint, relative paths only.</strong></p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">05</div>
+              <div class="gutter-summary">A common track shape pairs a portal page (HTML, sometimes with JavaScript) with a backend API the portal calls.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s6" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">06</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part I — Architecture and infrastructure</div>
+                  <h2 class="section-title">Keep credentials out of <code>environment:</code>; everything goes in <code>secrets:</code>.</h2>
+                </div>
+              </div>
+
+              <p><code>config.yml</code> is committed to git like any other source file. Anything you put in a resource&#x27;s <code>environment:</code> block lives in repo history forever — including after you commit a &quot;fix&quot; that removes it. And during a play, the contents of <code>environment:</code> are visible to every learner who opens the Instruqt debug log. The combination is fatal for credentials: SSH keys, API tokens, license keys, and registry credentials all leak by default the moment they land in <code>environment:</code>.</p>
+              <p>The fix is the <code>secrets:</code> block. Declare the secret by name in <code>config.yml</code>; set the value in the Instruqt platform UI. The secret is injected into the host&#x27;s environment at runtime, never appears in the source tree, and never shows up in the debug log.</p>
+              <pre class="codeblock"><code class="lang-yaml">secrets:
+  - name: GITHUB_TOKEN
+  - name: VAULT_LICENSE
+  - name: VENDOR_API_KEY</code></pre>
+              <p>The same rule applies to lifecycle scripts. A <code>git clone https://${TOKEN}@github.com/...</code> line with a literal token committed to the script is no different from a credential in <code>config.yml</code> — the script lives in the repo, the credential lives in history. Reference <code>secrets:</code> values from scripts the same way you reference any other environment variable: <code>${GITHUB_TOKEN}</code>. If the secret is missing from the script&#x27;s environment, the value will be empty and the operation will fail visibly — which is what you want, not silent success on a leaked credential.</p>
+              <p>A &quot;fix it later&quot; PR comment is too late. Once a credential lands in a commit, treat it as compromised: rotate the secret, then deal with the source tree.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">06</div>
+              <div class="gutter-summary">config.yml is committed to git like any other source file.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s7" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">07</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part II — Lifecycle scripts</div>
+                  <h2 class="section-title">Wait for readiness, not just for running.</h2>
+                </div>
+              </div>
+
+              <p>Most services take longer to be <em>ready</em> than they take to be <em>running</em>. A postgres container accepts TCP connections seconds before the database accepts queries. A Flask app binds its port milliseconds before it can serve a request. A KasmVNC container responds to HTTP before its internal display server is fully up. Setup scripts that exit as soon as a container reports &quot;running&quot; race the actual readiness state, and the failure mode is a 502 in the learner&#x27;s first interaction.</p>
+              <p>Replace process-up checks with readiness checks that exercise the actual interface the learner will use. For postgres:</p>
+              <pre class="codeblock"><code class="lang-bash">until pg_isready -h db -U app -d app; do sleep 1; done</code></pre>
+              <p>For HTTP services, poll the health endpoint:</p>
+              <pre class="codeblock"><code class="lang-bash">until curl -fsS http://workstation:5000/healthz &gt; /dev/null; do sleep 1; done</code></pre>
+              <p>If your image lacks <code>pg_isready</code> (some slim Python images, for example), fall back to a Python loop that catches <code>psycopg2.OperationalError</code> and retries. The principle is the same: the setup script exits only when the next thing that will touch the service can actually succeed.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">07</div>
+              <div class="gutter-summary">Most services take longer to be ready than they take to be running.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s8" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">08</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part II — Lifecycle scripts</div>
+                  <h2 class="section-title">Wrap every subprocess call in a check script.</h2>
+                </div>
+              </div>
+
+              <p><code>set -euo pipefail</code> at the top of a check script is good defensive hygiene — until you start invoking subprocesses. Any unguarded <code>python3 -c ...</code>, <code>curl ...</code>, or <code>psql ...</code> that exits non-zero will trigger an immediate, silent bash exit. The platform then renders a generic &quot;Something went wrong&quot; modal that points at no specific cause. The script did not crash. It exited cleanly on a subprocess failure that bash decided to propagate, and the learner is given no path forward.</p>
+              <p>The fix is to wrap every subprocess call in an explicit error handler, so a clean failure produces a useful message instead of a void:</p>
+              <pre class="codeblock"><code class="lang-bash">RESULT=$(curl -fsS &quot;$API/healthz&quot;) || {
+  fail-message &quot;API health check failed. Is the service running on port 8000?&quot;
+  exit 1
+}</code></pre>
+              <p>The cost is roughly half a line per call. The payoff is a check script that surfaces a real error message when something goes wrong, instead of silently dropping the learner into a generic &quot;we don&#x27;t know what happened&quot; UI.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">08</div>
+              <div class="gutter-summary">set -euo pipefail at the top of a check script is good defensive hygiene — until you start invoking subprocesses.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s9" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">09</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part II — Lifecycle scripts</div>
+                  <h2 class="section-title">Make solve scripts idempotent and complete.</h2>
+                </div>
+              </div>
+
+              <p>A solve script&#x27;s job is to produce the exact state that the corresponding check script validates, no more and no less, regardless of the state the host is in when the script runs. That means it must succeed when run twice (idempotent), and it must produce <em>every</em> condition the check script tests for (complete).</p>
+              <p>Idempotency is the more common failure. A solve script that runs <code>useradd analyst</code> will fail on its second run because the user already exists; the script either has to check first or use <code>id analyst &gt;/dev/null 2&gt;&amp;1 || useradd analyst</code>. The same applies to file creation, schema changes, package installs, and any other state-touching operation. A reliable habit is to write every solve step as either &quot;create if absent&quot; or &quot;ensure desired state&quot; rather than &quot;create.&quot;</p>
+              <p>Completeness is more often missed. A check script that verifies five separate properties — a user exists, has SELECT on table X, lacks DELETE on table Y, has a custom search_path, and is not a superuser — needs a solve script that establishes all five. A solve script that establishes four out of five passes informally on the author&#x27;s machine and fails the actual check, often after a long debugging session.</p>
+              <p>A useful test: run the solve script twice on a fresh environment, then run the check script. If the check passes both times, the solve is correctly idempotent and complete.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">09</div>
+              <div class="gutter-summary">A solve script&#x27;s job is to produce the exact state that the corresponding check script validates, no more and no less, regardless of the state the host is in when the script runs.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s10" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">10</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part II — Lifecycle scripts</div>
+                  <h2 class="section-title">Guard your idempotent renames.</h2>
+                </div>
+              </div>
+
+              <p>The standard pattern for wrapping a system binary is to rename the original out of the way (<code>mv /usr/bin/foo /usr/bin/foo-real</code>) and write a wrapper script in its place. This works perfectly the first time. On the second run of the same setup script, the rename moves the <em>wrapper</em> to <code>foo-real</code>, and the new wrapper ends up calling itself. The result is infinite recursion the first time anyone invokes the binary, which often manifests as a process explosion that fills the host&#x27;s process table.</p>
+              <p>The fix is one line: guard the rename with a check for the backup file&#x27;s existence.</p>
+              <pre class="codeblock"><code class="lang-bash">if [ ! -f /usr/bin/foo-real ]; then
+  mv /usr/bin/foo /usr/bin/foo-real
+fi
+
+cat &gt; /usr/bin/foo &lt;&lt;&#x27;EOF&#x27;
+#!/bin/bash
+exec /usr/bin/foo-real --extra-flag &quot;$@&quot;
+EOF
+chmod +x /usr/bin/foo</code></pre>
+              <p>The wrapper itself is safe to rewrite on every run — only the rename needs guarding. This pattern composes with anything that needs an idempotent overwrite-once: replacing config files, swapping default editors, substituting libraries. Same <code>[ ! -f &lt;backup&gt; ]</code> guard, same one-line fix.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">10</div>
+              <div class="gutter-summary">The standard pattern for wrapping a system binary is to rename the original out of the way (mv /usr/bin/foo /usr/bin/foo-real) and write a wrapper script in its place.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s11" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">11</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part II — Lifecycle scripts</div>
+                  <h2 class="section-title">Strip null bytes after editing on a Windows host.</h2>
+                </div>
+              </div>
+
+              <p>Files edited on a Windows-mounted filesystem can accumulate trailing null bytes — invisible <code>0x00</code> characters that don&#x27;t show up in any normal editor view but break <code>instruqt track push</code> with a misleading UTF-8 error: <code>invalid byte sequence for encoding &quot;UTF8&quot;: 0x00</code>. The error names UTF-8, but the actual cause is a stray null. The most common victims are <code>track.yml</code>, <code>config.yml</code>, and individual <code>assignment.md</code> files.</p>
+              <p>Strip nulls with a quick Python pass before pushing:</p>
+              <pre class="codeblock"><code class="lang-python">import pathlib
+for p in pathlib.Path(&quot;.&quot;).rglob(&quot;*&quot;):
+    if p.suffix in (&quot;.yml&quot;, &quot;.md&quot;) and p.is_file():
+        b = p.read_bytes()
+        if b&#x27;\x00&#x27; in b:
+            p.write_bytes(b.replace(b&#x27;\x00&#x27;, b&#x27;&#x27;))
+            print(f&quot;stripped: {p}&quot;)</code></pre>
+              <p>Run this any time <code>instruqt track push</code> errors with the UTF-8 message. Repeat after every editing session on a Windows host. The fix takes seconds; chasing the bogus UTF-8 error without knowing about it can take a quarter of an afternoon.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">11</div>
+              <div class="gutter-summary">Files edited on a Windows-mounted filesystem can accumulate trailing null bytes — invisible 0x00 characters that don&#x27;t show up in any normal editor view but break instruqt track push with a…</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s12" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">12</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part II — Lifecycle scripts</div>
+                  <h2 class="section-title">Plan cleanup the moment you provision an external resource.</h2>
+                </div>
+              </div>
+
+              <p>A track that creates costed external state — a managed serverless project, a SaaS tenant, an LLM API key with a budget, a per-participant GitHub identity, a GCP GPU VM, a managed-service trial org — owes the platform a corresponding <code>cleanup-{hostname}</code> that deletes it. Without one, every play of the track leaves behind a long-lived resource that nobody is watching. Orphans accumulate quietly. Costs accrue. Quotas fill. Eventually some operations engineer notices, hunts down the source, and discovers a track that has been bleeding for weeks.</p>
+              <p>The discipline is to write the cleanup script in the same session you write the provisioning code, not later. The provisioning script captures the resource&#x27;s identifier with <code>agent variable set</code>; the cleanup script reads it with <code>agent variable get</code> and issues the delete.</p>
+              <pre class="codeblock"><code class="lang-bash"># In setup, after creating the resource:
+PROJECT_ID=$(curl -fsS -X POST &quot;$API/projects&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -d &#x27;{&quot;name&quot;:&quot;lab-&#x27;&quot;$INSTRUQT_PARTICIPANT_ID&quot;&#x27;&quot;}&#x27; | jq -r &#x27;.id&#x27;)
+agent variable set ES_PROJECT_ID &quot;$PROJECT_ID&quot;
+
+# In cleanup-{hostname}:
+PROJECT_ID=$(agent variable get ES_PROJECT_ID)
+curl -X DELETE &quot;$API/projects/$PROJECT_ID&quot; \
+  -H &quot;Authorization: Bearer $TOKEN&quot;</code></pre>
+              <p>If the cleanup script is hard to write — branchy, conditional on which provisioning step succeeded, dependent on parsing complex API responses — the design has accumulated complexity that will hurt future maintenance. A well-shaped track has a cleanup that is mechanical: read N agent variables, issue N delete calls, exit zero.</p>
+              <p>If you can&#x27;t cleanly delete the resource at all — the platform doesn&#x27;t support deletion via API, the resource has no stable identifier, the cleanup requires manual approval — that&#x27;s a strong signal to choose a different resource type or to scope the track differently.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">12</div>
+              <div class="gutter-summary">A track that creates costed external state — a managed serverless project, a SaaS tenant, an LLM API key with a budget, a per-participant GitHub identity, a GCP GPU VM, a managed-service trial org —…</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s13" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">13</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part II — Lifecycle scripts</div>
+                  <h2 class="section-title">Watch the silent shebang traps.</h2>
+                </div>
+              </div>
+
+              <p>Two malformed bash header lines turn <code>set -euxo pipefail</code> into nothing. Both produce silent failure modes that are difficult to diagnose because the script appears to run normally — the absent error-exit and trace behavior just lets failures pass through invisibly.</p>
+              <p>The first trap is <code>#set -euxo pipefail</code> — note the leading <code>#</code>. The line is a comment. The shell never executes the <code>set</code> builtin. Without <code>-e</code>, intermediate failures don&#x27;t abort the script. Without <code>-x</code>, you can&#x27;t see what went wrong from the trace. The script appears to complete; the actual end state is whatever happened to survive. This bug copy-pastes easily: when the shebang line above is <code>#!/bin/bash</code>, a hand that adds <code>set -euxo pipefail</code> immediately below sometimes copies the leading <code>#</code>.</p>
+              <p>The second trap is <code>set -eux pipefail</code> — missing the <code>-o</code> flag. The <code>set</code> builtin reads <code>pipefail</code> as a positional parameter, not as an option name. Only <code>-e</code>, <code>-u</code>, and <code>-x</code> are actually applied. Pipeline failures (<code>curl ... | jq ...</code> where curl fails) pass through unflagged. Setup proceeds on partial data. Check scripts pass on data that wasn&#x27;t actually generated.</p>
+              <p>Both bugs show up in the wild often enough to warrant their own grep:</p>
+              <pre class="codeblock"><code class="lang-bash">grep -rn &quot;^#set -&quot; track_scripts/ */setup-* */check-*
+grep -rn &quot;set -eux pipefail$&quot; track_scripts/ */setup-* */check-*</code></pre>
+              <p>Run these before every push. The fix in each case is one character: drop the <code>#</code>, or add <code>o</code> after <code>-eux</code>. Detection takes seconds. The diagnostic time when the bug is live in production can run a quarter of a day.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">13</div>
+              <div class="gutter-summary">Two malformed bash header lines turn set -euxo pipefail into nothing.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s14" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">14</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part III — Check scripts that teach</div>
+                  <h2 class="section-title">Make every check teach.</h2>
+                </div>
+              </div>
+
+              <p>A check script&#x27;s job is not to determine pass or fail. Its job is to teach the learner what they got wrong and how to fix it.</p>
+              <p>The default pattern — chaining every assertion into one expression and emitting a single generic message on failure — satisfies the platform&#x27;s contract but fails the learner. They see &quot;User is not configured correctly,&quot; they re-read the assignment, and they run the same SQL again. This is where learners abandon tracks.</p>
+              <p>The granular pattern runs each assertion independently, and on each failure emits a specific remediation message that names the exact command the learner needs to run:</p>
+              <pre class="codeblock"><code class="lang-bash">if ! psql -tAc &quot;SELECT 1 FROM pg_roles WHERE rolname=&#x27;analyst&#x27;&quot; | grep -q 1; then
+  fail-message &quot;User &#x27;analyst&#x27; does not exist. Run: CREATE USER analyst WITH PASSWORD &#x27;changeme&#x27;;&quot;
+  exit 1
+fi
+
+if ! psql -tAc &quot;SELECT has_table_privilege(&#x27;analyst&#x27;, &#x27;orders&#x27;, &#x27;SELECT&#x27;)&quot; | grep -q t; then
+  fail-message &quot;User &#x27;analyst&#x27; lacks SELECT on orders. Run: GRANT SELECT ON orders TO analyst;&quot;
+  exit 1
+fi</code></pre>
+              <p>That second assertion&#x27;s message — naming the exact GRANT statement to run — converts the Check button from a verdict into a teaching tool. A track that takes the time to write specific failure messages is a different product than one that does not.</p>
+              <p>The cost is real: five well-written assertions take longer to write than one chained expression. But check scripts are some of the highest-leverage prose in the entire track. A learner reads the assignment once. They read failed check messages every time they iterate. Spend the time. <em>(See Pattern Cookbook Recipe 36 for the full granular check pattern, including auto-counted assertions and side-effect-triggering checks.)</em></p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">14</div>
+              <div class="gutter-summary">A check script&#x27;s job is not to determine pass or fail.</div>
+
+              <div class="gutter-related">
+                <div class="gutter-label">Related</div>
+                <a href="../pattern-cookbook/index.html#r36"><span class="ref-num-inline">REC 36</span>Cookbook recipe</a>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s15" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">15</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part III — Check scripts that teach</div>
+                  <h2 class="section-title">Helper availability is image-dependent — guard accordingly.</h2>
+                </div>
+              </div>
+
+              <p><code>fail-message</code> and <code>set-status</code> are not universally available. An earlier rule of thumb — &quot;container-only, not on VMs&quot; — was a useful approximation but understates where the helpers exist. They ship on every Instruqt-published container image, on every Instruqt-published custom VM image, and on every stock cloud Linux image (the agent installs during bootstrap). They are also reliably present on most vendor-published custom VM images that bake the Instruqt tooling in — vendors that maintain workshop-specific image families typically include the helpers as part of their base build.</p>
+              <p>Where the helpers genuinely don&#x27;t exist is on <strong>raw upstream Docker base images</strong>: stock <code>ubuntu:22.04</code>, <code>python:3.11-slim</code>, <code>node:22-bookworm</code>, and similar. A check script invoking <code>fail-message</code> on one of those exits 127 with no useful error, and the platform renders a generic &quot;Something went wrong&quot; modal.</p>
+              <p>The fix is to know the image you&#x27;re using and guard accordingly. On any image where helper availability is uncertain, defend with <code>|| true</code>:</p>
+              <pre class="codeblock"><code class="lang-bash">fail-message &quot;API not reachable. Run: ./start-api.sh&quot; || true
+exit 1</code></pre>
+              <p>When you&#x27;ve decided to skip the helper entirely, fall back to plain <code>echo</code> and <code>exit 1</code>:</p>
+              <pre class="codeblock"><code class="lang-bash">if ! systemctl is-active --quiet myservice; then
+  echo &quot;myservice is not running. Run: systemctl start myservice&quot;
+  exit 1
+fi</code></pre>
+              <p>The styled UI hint is lost, but the message surfaces in the Instruqt debug log and the script fails clean instead of mysteriously.</p>
+              <p>A useful heuristic: image is custom-built for Instruqt workshops (often shows a Packer-build marker like <code>packer-</code> in the name) — almost always present. Stock cloud Linux image — present, via bootstrap. <code>ubuntu:22.04</code> or <code>python:3.11-slim</code> from Docker Hub — almost always absent. When in doubt, a one-line <code>fail-message &quot;test&quot;</code> in a check script will exit 127 if the helper isn&#x27;t there. Five-second test, prevents days of debugging.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">15</div>
+              <div class="gutter-summary">fail-message and set-status are not universally available.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s16" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">16</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part III — Check scripts that teach</div>
+                  <h2 class="section-title">Validate intent, not intermediate state.</h2>
+                </div>
+              </div>
+
+              <p>Resources in many tracks progress through multiple states: ingested → classified → enriched → governed; provisioned → configured → tested → deployed. A check script that asserts a <em>specific intermediate state</em> — for example, <code>status == &quot;enriched&quot;</code> — will produce false negatives on resources that have legitimately advanced further. The learner&#x27;s correct work fails the check because it advanced too far.</p>
+              <p>The fix is to validate the <em>intent</em> of the assertion, not a single state value. Accept all valid terminal states for the check&#x27;s intent. If the check is meant to verify that enrichment happened, accept any state at or beyond enrichment; do not insist on the exact label <code>enriched</code>.</p>
+              <pre class="codeblock"><code class="lang-bash">case &quot;$STATUS&quot; in
+  enriched|governed)
+    # both indicate enrichment occurred
+    ;;
+  *)
+    fail-message &quot;Resource has not been enriched yet.&quot;
+    exit 1
+    ;;
+esac</code></pre>
+              <p>The same logic applies to data-driven checks. A query that compares the learner&#x27;s submitted answer to a hardcoded constant breaks when the seeded dataset is rebaked or the source data drifts. Use the live-truth pattern instead: re-execute the same query the learner ran against the live data source, and compare to their submitted value. The check is now self-correcting against any future change to the source.</p>
+              <p>The general form: a check script&#x27;s pass condition is a <em>property</em> of the resource or a <em>property</em> of the data, not a position in a state machine or a constant baked into the script. Express it as the property.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">16</div>
+              <div class="gutter-summary">Resources in many tracks progress through multiple states: ingested → classified → enriched → governed; provisioned → configured → tested → deployed.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s17" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">17</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part III — Check scripts that teach</div>
+                  <h2 class="section-title">For certifications, score the work; do not gate it.</h2>
+                </div>
+              </div>
+
+              <p>Most check scripts emit a binary verdict: pass or fail. For certification or assessment-style tracks, this is the wrong abstraction. A learner who has met seven of eight criteria gets the same response as a learner who has met none, and they have no way to identify what specifically remains.</p>
+              <p>A scored rubric replaces the binary verdict with a transparent point-based tally. Each assertion is worth N points; the script accumulates a score as it runs; the final output is a color-coded scorecard before the script exits 0 or 1 based on a passing threshold.</p>
+              <pre class="codeblock"><code class="lang-bash">SCORE=0
+TOTAL=100
+
+if check_assertion_one; then
+  SCORE=$((SCORE + 15))
+  echo &quot;[PASS] +15 — Resource was tagged correctly&quot;
+else
+  echo &quot;[FAIL]   0 — Resource was not tagged. See section 2.&quot;
+fi
+
+# … repeat for each criterion …
+
+echo
+echo &quot;Final score: $SCORE / $TOTAL&quot;
+[ &quot;$SCORE&quot; -ge 70 ] &amp;&amp; exit 0 || exit 1</code></pre>
+              <p>The cost is a more complex script. The benefit is that learners who fall short know precisely which two of the eight criteria are still missing and can target their second attempt instead of starting from scratch. Certification becomes a coachable scorecard rather than a black box. <em>(See Pattern Cookbook Recipe 37 for a full scored rubric implementation including color coding and per-criterion remediation prose.)</em></p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">17</div>
+              <div class="gutter-summary">Most check scripts emit a binary verdict: pass or fail.</div>
+
+              <div class="gutter-related">
+                <div class="gutter-label">Related</div>
+                <a href="../pattern-cookbook/index.html#r37"><span class="ref-num-inline">REC 37</span>Cookbook recipe</a>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s18" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">18</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part IV — Content and assignment design</div>
+                  <h2 class="section-title">Pair editable code with a reference implementation.</h2>
+                </div>
+              </div>
+
+              <p>A challenge that drops the learner into an editor with a single starter file gives them only one path forward: figure it out or get stuck. The companion-code-tab pattern fixes this with almost no extra effort. Add a <em>second</em> <code>code</code> tab next to the editable file, pointing at a completed reference implementation written by the setup script:</p>
+              <pre class="codeblock"><code class="lang-yaml">tabs:
+  - title: Edit
+    type: code
+    hostname: workstation
+    path: /root/report.py
+  - title: Reference
+    type: code
+    hostname: workstation
+    path: /root/report_complete.py</code></pre>
+              <p>Stuck learners can open the reference, see the shape of the answer, and return to their own implementation. The pattern works because the reference is <em>visible</em> but not <em>forced</em> — it is a hint the learner reaches for, not a spoiler the platform shoves in their face. Time-on-track drops; completion rates rise; and the learner walks away with both their own work and a known-good reference for later.</p>
+              <p>A small refinement: name the reference file something the learner will recognize as &quot;the answer&quot; (<code>report_complete.py</code>, <code>solution.py</code>) rather than something cryptic. The discoverability is the point. <em>(See Pattern Cookbook Recipe 31 for the full companion-code-tab implementation.)</em></p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">18</div>
+              <div class="gutter-summary">A challenge that drops the learner into an editor with a single starter file gives them only one path forward: figure it out or get stuck.</div>
+
+              <div class="gutter-related">
+                <div class="gutter-label">Related</div>
+                <a href="../pattern-cookbook/index.html#r31"><span class="ref-num-inline">REC 31</span>Cookbook recipe</a>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s19" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">19</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part IV — Content and assignment design</div>
+                  <h2 class="section-title">Use HTTPS on every website tab.</h2>
+                </div>
+              </div>
+
+              <p>A <code>website</code> tab pointing at an <code>http://</code> URL will cause <code>instruqt track push</code> to fail at validation. The failure mode is silent enough at the platform level that the cause is not always obvious from the error output. This rule is worth its own line in the booklet because the failure is silent and the fix is trivial: every URL in every <code>website</code> tab must be HTTPS.</p>
+              <pre class="codeblock"><code class="lang-yaml">tabs:
+  - title: Vendor docs
+    type: website
+    url: https://docs.example.com   # never http://</code></pre>
+              <p>This applies even to URLs that &quot;obviously&quot; support HTTPS — the validator does not negotiate. If the destination genuinely cannot be served over HTTPS, switch to a <code>service</code> tab (which uses Instruqt&#x27;s certificate provisioning) or an <code>external</code> tab (which is more permissive). Or fix the destination, if you control it. Do not push a track with an <code>http://</code> website tab and hope.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">19</div>
+              <div class="gutter-summary">A website tab pointing at an http:// URL will cause instruqt track push to fail at validation.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s20" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">20</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part IV — Content and assignment design</div>
+                  <h2 class="section-title">Number challenges sequentially, without gaps.</h2>
+                </div>
+              </div>
+
+              <p>Challenge directories at the track root must be numbered with a leading two-digit prefix — <code>01-</code>, <code>02-</code>, <code>03-</code> — and the order must match the challenge sequence in <code>track.yml</code>. Numbering is more than cosmetic. Gaps in the sequence (<code>01-</code>, <code>02-</code>, <code>04-</code>) or mismatches between directory order and <code>track.yml</code> order will produce undefined behavior at push time, sometimes erroring, sometimes silently shipping a track with the wrong sequence.</p>
+              <p>When inserting a challenge in the middle of an existing track, renumber every subsequent challenge to keep the sequence dense. When deleting a challenge, renumber the rest. Some tracks use a double-number format (<code>01-01-</code>, <code>01-02-</code>) for sub-grouped challenges; this is fine, as long as the prefix sort order matches the intended sequence.</p>
+              <p>The <code>id</code> field assigned by Instruqt is permanent and unaffected by renumbering — only the directory name changes. Treat the leading numbers as ordering metadata that belongs to the filesystem, not to the challenge itself.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">20</div>
+              <div class="gutter-summary">Challenge directories at the track root must be numbered with a leading two-digit prefix — 01-, 02-, 03- — and the order must match the challenge sequence in track.yml.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s21" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">21</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part IV — Content and assignment design</div>
+                  <h2 class="section-title">Add defensive setup at the challenge level.</h2>
+                </div>
+              </div>
+
+              <p>Even a perfectly designed track can be broken by a learner who skips ahead, hits the &quot;skip&quot; button, or encounters a transient infrastructure failure that leaves a previous challenge&#x27;s state incomplete. A challenge that depends on state established by an earlier challenge — a record in a database, a file on disk, a configuration applied to a service — is fragile if it assumes that state is always present.</p>
+              <p>A defensive challenge-level setup script idempotently re-creates the state the previous challenge was supposed to leave behind, so the current challenge starts in a known-good condition regardless of what happened before:</p>
+              <pre class="codeblock"><code class="lang-bash">#!/bin/bash
+set -euo pipefail
+
+# Re-create the customer record the previous challenge should have created
+COUNT=$(psql -tAc &quot;SELECT count(*) FROM customers WHERE name=&#x27;Acme Corp&#x27;;&quot;)
+if [ &quot;$COUNT&quot; -eq 0 ]; then
+  psql &lt;&lt;SQL
+INSERT INTO customers (name, plan, created_at)
+VALUES (&#x27;Acme Corp&#x27;, &#x27;enterprise&#x27;, NOW());
+SQL
+fi</code></pre>
+              <p>The pattern is: query first, create only if absent. The cost is a few lines per dependent challenge. The payoff is a track that holds up against the messy reality of how learners actually move through it. <em>(See Pattern Cookbook Recipe 32 for the defensive challenge-level setup pattern in full.)</em></p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">21</div>
+              <div class="gutter-summary">Even a perfectly designed track can be broken by a learner who skips ahead, hits the &quot;skip&quot; button, or encounters a transient infrastructure failure that leaves a previous challenge&#x27;s state…</div>
+
+              <div class="gutter-related">
+                <div class="gutter-label">Related</div>
+                <a href="../pattern-cookbook/index.html#r32"><span class="ref-num-inline">REC 32</span>Cookbook recipe</a>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s22" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">22</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part IV — Content and assignment design</div>
+                  <h2 class="section-title">Match the code-block language tag to what&#x27;s actually executing.</h2>
+                </div>
+              </div>
+
+              <p>A fenced code block in <code>assignment.md</code> is more than syntax highlighting. The language tag tells Instruqt&#x27;s renderer what to do with the block — particularly when paired with the <code>run</code> modifier. <code> </code>`<code>python,run </code> invokes Python on the block&#x27;s contents. <code> </code>`<code>bash,run </code> invokes bash. The wrong tag produces wrong execution, and the failure mode is invisible to the reader because the rendered output looks correct.</p>
+              <p>The most common version of this bug is a Python tag on a shell block:</p>
+              <pre class="codeblock"><code class="lang-bash"># Reads as bash to the reader, but if the fence is ```python,run
+# instead of ```bash,run, clicking the run button hands the line
+# to a Python interpreter — which produces a SyntaxError.
+ls -la /workspace</code></pre>
+              <p>The fix is matchmaking. Use <code> </code>`<code>bash,run </code> for any block executing in a shell. Use <code> </code>`<code>python,run </code> only when the block actually is Python. Use <code> </code>`<code>run </code> (no language) for language-agnostic runnable blocks where the active terminal will figure it out. Use plain <code> </code>`<code>bash </code> (no <code>run</code> modifier) for snippets the learner is meant to read but not execute — for example, a bash-flavored example containing placeholders the learner must edit before running.</p>
+              <p>A related trap: <code> </code>`<code>bash {&quot;run&quot;: &quot;execute&quot;} </code> looks like it should work. It does not. The block renders, but no run button appears. Instruqt&#x27;s modifier syntax is comma-separated after the language tag — <code>,run</code>, <code>,copy</code>, <code>,nocopy,run</code> — and the JSON-style annotation is silently invalid. Always use the comma form.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">22</div>
+              <div class="gutter-summary">A fenced code block in assignment.md is more than syntax highlighting.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s23" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">23</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part V — Shipping and maintenance</div>
+                  <h2 class="section-title">Test the whole track end to end before pushing.</h2>
+                </div>
+              </div>
+
+              <p>Authors who push frequently and test challenge by challenge eventually ship a track that works for every individual challenge but fails when run end to end. The cause is almost always state — challenge two assumes something challenge one set up, and the learner hits the discontinuity even though the author never did, because the author tested challenge two starting from a state they manually established.</p>
+              <p>Before any push that will reach a learner, run the full track from start to finish in a fresh environment. Click through every challenge in order. Use the solve button on each one if you have to, but make sure the entire sequence completes without manual intervention between challenges. The bugs you find this way are almost never the bugs you find by testing in pieces.</p>
+              <p>This is the single highest-value test you can run, and it is also the test most authors skip because it takes the longest. Skip it only when you are willing to ship a track you have not actually finished.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">23</div>
+              <div class="gutter-summary">Authors who push frequently and test challenge by challenge eventually ship a track that works for every individual challenge but fails when run end to end.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s24" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">24</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part V — Shipping and maintenance</div>
+                  <h2 class="section-title">Re-test after every Windows-side edit.</h2>
+                </div>
+              </div>
+
+              <p>Edits made on a Windows-mounted filesystem can introduce defects that do not exist in the source as you see it: trailing null bytes, line ending mismatches, encoding issues, and occasionally permissions glitches that survive the next push. The author opens an editor, makes a one-line change to fix a typo, pushes, and the track suddenly fails to push at all — or worse, pushes successfully but breaks at runtime.</p>
+              <p>The defensive habit is to treat any edit on a Windows host as a potential source of corruption and re-run the validation steps that catch it: strip null bytes (Principle 11), normalize line endings if your tooling does not do it automatically, and run <code>instruqt track push</code> against a non-production version of the track to confirm the change actually validates. None of these steps is expensive on its own. The expensive thing is shipping a broken track because you trusted that a one-line change couldn&#x27;t have introduced anything.</p>
+              <p>If your work environment is a Windows host and your track repository lives on a mounted filesystem, build the validation pass into your habits rather than your memory. Your future self will thank you.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">24</div>
+              <div class="gutter-summary">Edits made on a Windows-mounted filesystem can introduce defects that do not exist in the source as you see it: trailing null bytes, line ending mismatches, encoding issues, and occasionally…</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s25" class="chapter">
+          <div class="chapter-grid">
+            <div class="ch-body">
+
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">25</span></div>
+                <div class="section-title-block">
+                  <div class="section-eyebrow">Part V — Shipping and maintenance</div>
+                  <h2 class="section-title">Maintain a track-level MEMORY.md as a living build log.</h2>
+                </div>
+              </div>
+
+              <p>A track in active development accumulates decisions, deferred work, and gotchas faster than any author can remember. The defenses against this are well known — commit messages, READMEs, comments in setup scripts — and none of them quite fit the shape. Commit messages are short and tied to specific changes. READMEs describe the track to a reader. Comments live inside code. None of them captures &quot;I tried X and abandoned it because Y&quot; or &quot;this works only because Z — revisit if Z changes.&quot;</p>
+              <p>A <code>MEMORY.md</code> file at the track root, treated as a living build log, fills that gap. The shape that holds up:</p>
+              <pre class="codeblock"><code class="lang-markdown"># MEMORY — &lt;track-slug&gt;
+
+Status: &lt;one-line&gt;
+
+## Session History
+### Session N — &lt;date&gt;
+- One bullet per meaningful event.
+
+## Deferred Work
+- Items noticed but not yet shipped.
+
+## Track Architecture Notes
+- Topology, key files, gotchas baked into this track&#x27;s design.</code></pre>
+              <p>Update it after every meaningful track change — fixes shipped, decisions made, deferred work identified. The cost is a few sentences. The benefit is that picking up a paused track three weeks later starts from a real briefing rather than a cold scroll through commit history.</p>
+              <p>Two sections earn their own place. <strong>Deferred Work</strong> captures things you noticed but did not fix in this session, so they do not get lost. <strong>Session History</strong> captures the <em>why</em> behind decisions, so future-you can audit your own reasoning rather than re-derive it.</p>
+              <p>The discipline is not about thoroughness — it is about ratchet. Once you write things down, you stop re-discovering them. The build log accumulates rather than the build memory.</p>
+
+            </div>
+
+            <aside class="ch-gutter">
+              <div class="gutter-num">25</div>
+              <div class="gutter-summary">A track in active development accumulates decisions, deferred work, and gotchas faster than any author can remember.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="s-end" class="chapter">
+          <div class="chapter-grid" style="grid-template-columns: minmax(0, 1fr); gap: 0;">
+            <div class="ch-body" style="max-width: var(--max-w);">
+              <div class="section-label">
+                <div class="section-pill-wrap"><span class="section-pill">END</span></div>
+                <div class="section-title-block">
+                  <h2 class="section-title">A Closing Note</h2>
+                </div>
+              </div>
+
+              <p>Twenty-five is not the right number because the world contains exactly twenty-five principles for building Instruqt tracks. Twenty-five is the right number because the source these principles draw from carries the lessons that earned a place — and every lesson on this list had to earn it against every other. Above thirty, the pressure to be selective relaxes and filler creeps in. Below twenty, the list misses real ground. Twenty-five is where the rules feel chosen <em>and</em> the source feels covered.</p>
+              <p>Read this booklet straight through the first time. Then come back to single principles when you have a specific problem in front of you — a check script that is not behaving, a setup script that runs once and breaks the second time, a push that fails with a message that does not make sense. The principles are short on purpose: each one is a thing you can hold in your head and apply at the moment you need it.</p>
+              <p>Some of these rules will feel obvious. Some will feel like overkill until the day they save you. Some you will disagree with — and disagreement is fine, as long as you have thought about it. The point of a best-practices booklet is not to settle every debate but to make the debates explicit so they can be had.</p>
+              <p>If you build tracks long enough, you will find your own rules — habits you grew into through your own scars. Add them. Cross out the ones here you have outgrown. The list is not sacred. The discipline of having a list is.</p>
+            </div>
+          </div>
+        </section>
+      
+</div><!-- /.content-inner -->
+</div><!-- /.content -->
+</main>
+</div><!-- /.layout -->
+<button aria-label="Back to top" id="btt" title="Back to top">↑</button>
+<script>
+  const progress = document.getElementById('progress');
+  const btt = document.getElementById('btt');
+
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    progress.style.width = (pct * 100) + '%';
+    btt.classList.toggle('show', window.scrollY > 300);
+  });
+
+  btt.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  /* Scroll-driven sidebar active state */
+  const navItems = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(i => i.classList.remove('active'));
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -80% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

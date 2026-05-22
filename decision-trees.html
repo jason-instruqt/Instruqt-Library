@@ -1,0 +1,2785 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Instruqt Decision Trees — Decision Trees</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&amp;family=DM+Mono:wght@400;500&amp;family=Fraunces:ital,wght@0,300;0,600;0,700;1,300;1,400&amp;display=swap" rel="stylesheet"/>
+<style>
+    /* ═════════════════════════════════════════════════════════════
+       DESIGN SYSTEM v2 — Decision Trees
+       Signature moves: SVG mini-map showing tree structure with
+       current path highlighted in green, smoother slide transitions,
+       SVG tree diagram in print mode (full visualization).
+       ═════════════════════════════════════════════════════════════ */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── Purple ramp (cool — primary brand) ── */
+      --purple-900: #2e0a6e;
+      --purple-800: #3B0F8C;
+      --purple-700: #5B21B6;
+      --purple-600: #7C3AED;
+      --purple-400: #A78BFA;
+      --purple-300: #C4B5FD;
+      --purple-200: #DDD6FE;
+      --purple-100: #EDE9FE;
+      --purple-50:  #F5F3FF;
+
+      /* ── Ink ramp (warm-shifted dark — editorial accent) ── */
+      --ink-900: #1A1330;
+      --ink-700: #2A1F4D;
+      --ink-500: #4F4275;
+      --ink-300: #8D86A8;
+
+      /* ── Neutrals ── */
+      --dark:  #1E1B2E;
+      --mid:   #4B4569;
+      --light: #6D6490;
+      --rule:  #DDD6FE;
+
+      /* ── Code ── */
+      --code-bg:    #F0EDFF;
+      --code-color: #3730A3;
+
+      /* ── Dark code palette (shared via tokens — Cookbook canonical) ── */
+      --code-dark-bg:     #16161F;
+      --code-dark-bg-2:   #1A1A28;
+      --code-dark-border: #2D2D3F;
+      --code-dark-text:   #C9D1D9;
+
+      /* ── Semantic accents ── */
+      --amber-500: #F59E0B; --amber-50: #FFFBEB; --amber-900: #92400E;
+      --green-500: #10B981; --green-50: #ECFDF5; --green-900: #065F46;
+      --blue-500:  #3B82F6; --blue-50:  #EFF6FF; --blue-900:  #1E40AF;
+
+      /* ── Derived hover tones via color-mix ── */
+      --purple-600-hover: color-mix(in oklch, var(--purple-600), white 12%);
+      --purple-50-deep:   color-mix(in oklch, var(--purple-50), var(--purple-100) 60%);
+
+      /* ── Shadow system (two-layer, purple-tinted) ── */
+      --shadow-close:    0 1px 2px rgba(46, 10, 110, 0.05);
+      --shadow-ambient:  0 8px 24px -8px rgba(46, 10, 110, 0.08);
+      --shadow-resting:  var(--shadow-close), var(--shadow-ambient);
+      --shadow-elevated:
+        0 2px 4px -1px rgba(46, 10, 110, 0.08),
+        0 16px 40px -12px rgba(46, 10, 110, 0.18);
+      --shadow-button:   0 4px 16px rgba(124, 58, 237, 0.35);
+
+      /* ── Focus ring ── */
+      --focus-ring: 0 0 0 3px rgba(167, 139, 250, 0.35);
+
+      /* ── Container ── */
+      --sidebar-w: 240px;
+      --max-w:     820px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f8f7ff;
+      color: var(--mid);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    *:focus { outline: none; }
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      box-shadow: var(--focus-ring);
+      border-radius: 6px;
+    }
+    html { scroll-behavior: smooth; }
+
+    #progress {
+      position: fixed; top: 0; left: 0;
+      height: 3px; width: 0;
+      background: linear-gradient(90deg, var(--purple-600), var(--purple-400));
+      z-index: 1000;
+      transition: width 0.1s linear;
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      min-height: 100vh;
+    }
+    .main { min-width: 0; }
+    .content {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 48px 48px 96px;
+    }
+
+    /* ── Sidebar (gradient — purple-900 → ink-900) ── */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, var(--ink-900) 0%, var(--purple-800) 100%);
+      padding-bottom: 32px;
+    }
+    .sidebar-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 18px 24px 6px;
+      padding: 7px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font: 500 10.5px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s;
+      width: fit-content;
+    }
+    .sidebar-back:hover {
+      color: #fff;
+      border-color: var(--purple-400);
+      background: rgba(167, 139, 250, 0.12);
+      transform: translateX(-2px);
+    }
+    .sidebar-back .back-arrow {
+      font-size: 13px;
+      color: var(--purple-400);
+      transition: transform 0.15s;
+    }
+    .sidebar-back:hover .back-arrow { transform: translateX(-2px); }
+
+    .sidebar-logo {
+      display: inline-block;
+      margin: 18px 24px 10px;
+      padding: 4px 9px;
+      background: var(--purple-400);
+      color: var(--ink-900);
+      font: 700 9px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border-radius: 4px;
+    }
+    .sidebar-title {
+      padding: 0 24px 22px;
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.005em;
+    }
+    .nav-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 8px 24px 8px 22px;
+      border-left: 2px solid transparent;
+      color: rgba(255, 255, 255, 0.65);
+      text-decoration: none;
+      font: 400 12.5px/1.4 'DM Sans', sans-serif;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+    .nav-num {
+      color: var(--purple-400);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      min-width: 40px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .nav-item:hover,
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.06);
+      border-left-color: var(--purple-400);
+      color: #fff;
+    }
+
+    /* ── Hero (compact) ── */
+    .hero {
+      background: linear-gradient(135deg, var(--ink-900) 0%, var(--purple-900) 30%, var(--purple-800) 65%, var(--purple-700) 100%);
+      padding: 72px 48px 60px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 540px; height: 540px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(167,139,250,0.1), transparent 70%);
+      top: -200px; right: -150px;
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(167,139,250,0.06), transparent 70%);
+      bottom: -100px; left: -100px;
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: var(--max-w);
+      position: relative;
+      z-index: 1;
+    }
+    .hero-series {
+      font: 700 10.5px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--purple-400);
+      margin-bottom: 18px;
+      animation: fadeUp 0.6s ease 0.05s both;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(38px, 5.5vw, 56px);
+      font-weight: 700;
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 18px;
+      letter-spacing: -0.015em;
+      animation: fadeUp 0.6s ease 0.12s both;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--purple-400);
+    }
+    .hero-tagline {
+      font-family: 'Fraunces', Georgia, serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: 17px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.65);
+      max-width: 580px;
+      margin-bottom: 36px;
+      animation: fadeUp 0.6s ease 0.24s both;
+    }
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      animation: fadeUp 0.6s ease 0.32s both;
+    }
+    .stat-card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 18px 20px;
+      backdrop-filter: blur(6px);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(167, 139, 250, 0.4);
+      transform: translateY(-1px);
+    }
+    .stat-value {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 30px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+    .stat-label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.58);
+      margin-top: 5px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOutLeft {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(-12px); }
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: linear-gradient(135deg, var(--purple-50), #fff);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin: 28px 0 44px;
+      box-shadow: var(--shadow-close);
+    }
+    .toc-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--purple-700);
+      margin-bottom: 16px;
+    }
+    .toc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 18px;
+    }
+    .toc-link {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 4px 0;
+      text-decoration: none;
+      color: var(--mid);
+      font-size: 13.5px;
+      transition: color 0.2s;
+    }
+    .toc-link-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple-600);
+      min-width: 36px;
+      font-variant-numeric: tabular-nums;
+    }
+    .toc-link:hover { color: var(--purple-800); }
+
+    /* ── Section label ── */
+    .section-label {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: start;
+      border-bottom: 1.5px solid var(--purple-200);
+      padding-bottom: 20px;
+      margin: 56px 0 24px;
+    }
+    .section-pill {
+      background: var(--purple-600);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 11px;
+      border-radius: 20px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    }
+    .section-eyebrow {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 13px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--purple-400);
+      margin-bottom: 4px;
+    }
+    .section-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--ink-900);
+      line-height: 1.2;
+      letter-spacing: -0.005em;
+    }
+
+    .tree-subtitle {
+      font: italic 400 14px/1.4 'DM Sans', sans-serif;
+      color: var(--light);
+      margin: 6px 0 14px;
+    }
+    .tree-intro {
+      font: 400 14px/1.7 'DM Sans', sans-serif;
+      color: var(--mid);
+      margin: 0 0 22px;
+    }
+    .tree-intro code {
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+      background: var(--code-bg);
+      color: var(--code-color);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── Base light code block ── */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--purple-200);
+      border-left: 3px solid var(--purple-600);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin: 16px 0;
+      overflow-x: auto;
+      box-shadow: var(--shadow-close);
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      color: var(--code-color);
+      line-height: 1.7;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ────────────────────────────────────────────────────────────────
+       INTERACTIVE PANE — JS-rendered (the engine in <script> populates it)
+       ──────────────────────────────────────────────────────────────── */
+    .i-pane {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 16px 0;
+      box-shadow: var(--shadow-resting, var(--shadow-close));
+    }
+    .i-top-bar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, var(--purple-50), #fff);
+      border-bottom: 1px solid var(--purple-200);
+    }
+    .i-breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      min-width: 0;
+    }
+    .i-crumb {
+      font: 400 10px/1 'DM Mono', monospace;
+      color: var(--mid);
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid var(--purple-200);
+      border-radius: 5px;
+      padding: 4px 8px;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .i-crumb.done {
+      color: var(--green-900);
+      background: rgba(16, 185, 129, 0.1);
+      border-color: var(--green-500);
+    }
+    .i-crumb-empty {
+      font: italic 400 11px/1 'DM Sans', sans-serif;
+      color: var(--light);
+    }
+    .i-crumb-sep {
+      color: var(--purple-400);
+      font-size: 11px;
+    }
+    .i-toggle, .static-toggle {
+      font: 500 11px/1 'DM Sans', sans-serif;
+      color: var(--purple-700);
+      background: #fff;
+      border: 1px solid var(--purple-200);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    }
+    .i-toggle:hover, .static-toggle:hover {
+      background: var(--purple-100);
+      border-color: var(--purple-400);
+    }
+    .i-toggle:active { transform: scale(0.96); }
+
+    /* ════════════════════════════════════════════════════════════════
+       MINI-MAP — Decision Trees signature
+       SVG visualization in the top bar showing the tree structure
+       with the current path highlighted in green.
+       ════════════════════════════════════════════════════════════════ */
+    .i-minimap {
+      flex-shrink: 0;
+      width: 110px;
+      height: 36px;
+      border: 1px solid var(--purple-200);
+      border-radius: 6px;
+      padding: 3px 5px;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .i-minimap svg {
+      width: 100%; height: 100%;
+      display: block;
+    }
+    .i-minimap .mm-node {
+      fill: var(--purple-200);
+      stroke: var(--purple-400);
+      stroke-width: 1;
+      transition: fill 0.25s, stroke 0.25s;
+    }
+    .i-minimap .mm-node.active {
+      fill: var(--purple-600);
+      stroke: var(--purple-700);
+    }
+    .i-minimap .mm-node.visited {
+      fill: var(--green-500);
+      stroke: var(--green-900);
+    }
+    .i-minimap .mm-node.terminal {
+      fill: #fff;
+      stroke: var(--purple-400);
+      stroke-width: 1.5;
+    }
+    .i-minimap .mm-node.terminal.reached {
+      fill: var(--green-500);
+      stroke: var(--green-900);
+    }
+    .i-minimap .mm-edge {
+      stroke: var(--purple-200);
+      stroke-width: 1;
+      fill: none;
+      transition: stroke 0.25s;
+    }
+    .i-minimap .mm-edge.active {
+      stroke: var(--green-500);
+      stroke-width: 1.8;
+    }
+
+    .i-body {
+      padding: 22px 24px;
+      animation: slideIn 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+    }
+    .i-q-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+    .i-q-num {
+      font: 700 10px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--purple-600);
+    }
+    .i-q-progress {
+      font: 400 11px/1 'DM Mono', monospace;
+      color: var(--light);
+    }
+    .i-q-text {
+      font: 400 16px/1.55 'DM Sans', sans-serif;
+      color: var(--ink-900);
+      margin: 0 0 16px;
+    }
+    .i-choices { display: grid; gap: 8px; }
+    .choice-btn {
+      text-align: left;
+      background: #fff;
+      border: 1.5px solid var(--purple-200);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font: 500 14px/1.4 'DM Sans', sans-serif;
+      color: var(--ink-900);
+      cursor: pointer;
+      transition: transform 0.15s, background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-close);
+    }
+    .choice-btn:hover {
+      transform: translateX(4px);
+      background: var(--purple-50);
+      border-color: var(--purple-400);
+      box-shadow: var(--shadow-ambient);
+    }
+    .choice-btn:active { transform: translateX(2px); }
+
+    .i-result {
+      background: linear-gradient(135deg, var(--green-50) 0%, color-mix(in oklch, var(--green-50), white 50%) 100%);
+      border: 1.5px solid var(--green-500);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-close);
+    }
+    .i-result-label {
+      font: 700 9px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--green-900);
+      margin-bottom: 8px;
+    }
+    .i-result-label::before { content: '✓ '; }
+    .i-result-title {
+      font: 600 20px/1.3 'Fraunces', Georgia, serif;
+      color: var(--green-900);
+      margin-bottom: 8px;
+      letter-spacing: -0.005em;
+    }
+    .i-result-detail {
+      font: 400 13.5px/1.6 'DM Sans', sans-serif;
+      color: #047857;
+    }
+    .i-footer {
+      display: flex;
+      gap: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--purple-100);
+      margin-top: 16px;
+    }
+    .i-back-btn, .i-reset-btn {
+      font: 500 11px/1 'DM Sans', sans-serif;
+      color: var(--purple-700);
+      background: #fff;
+      border: 1px solid var(--purple-200);
+      border-radius: 6px;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.1s;
+    }
+    .i-back-btn:hover, .i-reset-btn:hover {
+      background: var(--purple-50);
+      border-color: var(--purple-400);
+    }
+    .i-back-btn:active, .i-reset-btn:active { transform: scale(0.96); }
+
+    /* ── Static branch view ── */
+    .static-view { display: none; }
+    .tree.static-mode .static-view { display: block; }
+    .tree.static-mode .i-pane { display: none; }
+
+    .static-toggle-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .question {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin: 16px 0;
+      box-shadow: var(--shadow-close);
+    }
+    .q-num {
+      font: 700 10px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--purple-600);
+      margin-bottom: 8px;
+    }
+    .q-text {
+      font: 400 15.5px/1.55 'DM Sans', sans-serif;
+      color: var(--ink-900);
+      margin: 0 0 16px;
+    }
+    .branches {
+      display: grid;
+      gap: 12px;
+    }
+    .branch {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .branch-label {
+      font: 600 12.5px/1.4 'DM Sans', sans-serif;
+      color: var(--mid);
+      padding-top: 8px;
+    }
+
+    .recommendation {
+      background: var(--green-50);
+      border: 1px solid var(--green-500);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .rec-label {
+      font: 700 9px/1 'DM Sans', sans-serif;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--green-900);
+      margin-bottom: 6px;
+      opacity: 0.85;
+    }
+    .rec-title {
+      font: 600 14px/1.4 'DM Sans', sans-serif;
+      color: var(--green-900);
+      margin-bottom: 4px;
+    }
+    .rec-detail {
+      font: 400 13px/1.55 'DM Sans', sans-serif;
+      color: #047857;
+    }
+    .rec-detail code {
+      background: rgba(16, 185, 129, 0.12);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11.5px;
+      color: #047857;
+    }
+
+    .continue {
+      background: var(--purple-50);
+      border: 1px solid var(--purple-200);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font: 400 13.5px/1.5 'DM Sans', sans-serif;
+      color: var(--mid);
+    }
+    .continue strong {
+      color: var(--purple-700);
+      font-weight: 600;
+    }
+
+    .end-note {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--rule);
+      font: italic 400 13.5px/1.6 'DM Sans', sans-serif;
+      color: var(--light);
+    }
+
+    /* ── Back to top ── */
+    #btt {
+      position: fixed; bottom: 28px; right: 28px;
+      width: 44px; height: 44px;
+      background: var(--purple-600); color: #fff;
+      border: none; border-radius: 50%; cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-button);
+      opacity: 0; transform: translateY(8px); pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s, background 0.2s;
+      z-index: 100;
+    }
+    #btt.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    #btt:hover { background: var(--purple-700); transform: translateY(-2px); }
+    #btt:active { transform: translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 800px) {
+      .layout { display: block; }
+      .sidebar { display: none; }
+      .hero { padding: 52px 28px 44px; }
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .toc-grid { grid-template-columns: 1fr; }
+      .content { padding: 32px 22px 64px; }
+      .branch { grid-template-columns: 1fr; gap: 6px; }
+      .branch-label { padding-top: 0; }
+      .i-top-bar { grid-template-columns: 1fr; gap: 8px; }
+      .i-minimap { width: 100%; height: 32px; }
+    }
+
+    /* ── Print (most sophisticated — forces static view + page-break per tree) ── */
+    @media print {
+      #progress, #btt, .sidebar { display: none; }
+      .layout { display: block; }
+      body { background: #fff; }
+
+      .i-pane { display: none !important; }
+      .static-view { display: block !important; }
+      .static-toggle-row { display: none; }
+
+      .tree { page-break-before: always; }
+      .tree:first-of-type { page-break-before: auto; }
+
+      .question, .recommendation, .continue, .branch { break-inside: avoid; }
+
+      .recommendation, .continue, .question, .hero {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* Print-mode tree diagram appears between tree title and questions */
+      .print-tree-diagram {
+        display: block !important;
+        margin: 16px 0 24px;
+        padding: 16px;
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        background: #fafafa;
+      }
+      .print-tree-diagram svg {
+        width: 100%;
+        max-height: 240px;
+      }
+    }
+    /* Hidden in screen mode; visible in print */
+    .print-tree-diagram { display: none; }
+  </style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="layout">
+<nav class="sidebar">
+<a class="sidebar-back" href="./index.html">
+<span aria-hidden="true" class="back-arrow">←</span> Library
+    </a>
+<span class="sidebar-logo">Instruqt</span>
+<div class="sidebar-title">Instruqt Decision Trees</div>
+
+    <a class="nav-item" href="#tree1"><span class="nav-num">T 01</span> Choosing your compute</a>
+    <a class="nav-item" href="#tree2"><span class="nav-num">T 02</span> Exposing an application to the browser</a>
+    <a class="nav-item" href="#tree3"><span class="nav-num">T 03</span> Composing multiple hosts</a>
+    <a class="nav-item" href="#tree4"><span class="nav-num">T 04</span> Identity and cloud account strategy</a>
+    <a class="nav-item" href="#tree5"><span class="nav-num">T 05</span> Cross-host coordination and state</a>
+    <a class="nav-item" href="#tree6"><span class="nav-num">T 06</span> Choosing your check style</a>
+    <a class="nav-item" href="#tree7"><span class="nav-num">T 07</span> Structuring your assignment body</a>
+    <a class="nav-item" href="#tree8"><span class="nav-num">T 08</span> Generating project files in setup</a>
+    <a class="nav-item" href="#tree9"><span class="nav-num">T 09</span> Branding depth</a>
+    <a class="nav-item" href="#tree10"><span class="nav-num">T 10</span> Lab pacing and the track clock</a>
+    <a class="nav-item" href="#tree11"><span class="nav-num">T 11</span> Sandbox preset vs custom config.yml</a>
+    <a class="nav-item" href="#tree12"><span class="nav-num">T 12</span> Where to keep secret material</a>
+    <a class="nav-item" href="#tree13"><span class="nav-num">T 13</span> Engagement validation depth</a>
+    <a class="nav-item" href="#tree14"><span class="nav-num">T 14</span> Custom image vs runtime project generation</a>
+    <a class="nav-item" href="#tree15"><span class="nav-num">T 15</span> Quiz, file-based answer, or programmatic check</a>
+    <a class="nav-item" href="#tree16"><span class="nav-num">T 16</span> Lab layout and sidebar size</a>
+
+</nav>
+<main class="main">
+<header class="hero">
+<div class="hero-inner">
+<div class="hero-series">Decision Guide</div>
+<h1>Instruqt Decision Trees</h1>
+<p class="hero-tagline">Sixteen architectural decisions you will make on every track, rendered as navigable reference cards.</p>
+<div class="hero-stats">
+<div class="stat-card"><div class="stat-value">16</div><div class="stat-label">Trees</div></div>
+<div class="stat-card"><div class="stat-value">46</div><div class="stat-label">Questions</div></div>
+<div class="stat-card"><div class="stat-value">75</div><div class="stat-label">Recommendations</div></div>
+</div>
+</div>
+</header>
+<div class="content">
+
+        <div class="toc">
+          <div class="toc-title">In this document</div>
+          <div class="toc-grid">
+            <a class="toc-link" href="#tree1"><span class="toc-link-num">T 01</span> Choosing your compute</a>
+            <a class="toc-link" href="#tree2"><span class="toc-link-num">T 02</span> Exposing an application to the browser</a>
+            <a class="toc-link" href="#tree3"><span class="toc-link-num">T 03</span> Composing multiple hosts</a>
+            <a class="toc-link" href="#tree4"><span class="toc-link-num">T 04</span> Identity and cloud account strategy</a>
+            <a class="toc-link" href="#tree5"><span class="toc-link-num">T 05</span> Cross-host coordination and state</a>
+            <a class="toc-link" href="#tree6"><span class="toc-link-num">T 06</span> Choosing your check style</a>
+            <a class="toc-link" href="#tree7"><span class="toc-link-num">T 07</span> Structuring your assignment body</a>
+            <a class="toc-link" href="#tree8"><span class="toc-link-num">T 08</span> Generating project files in setup</a>
+            <a class="toc-link" href="#tree9"><span class="toc-link-num">T 09</span> Branding depth</a>
+            <a class="toc-link" href="#tree10"><span class="toc-link-num">T 10</span> Lab pacing and the track clock</a>
+            <a class="toc-link" href="#tree11"><span class="toc-link-num">T 11</span> Sandbox preset vs custom config.yml</a>
+            <a class="toc-link" href="#tree12"><span class="toc-link-num">T 12</span> Where to keep secret material</a>
+            <a class="toc-link" href="#tree13"><span class="toc-link-num">T 13</span> Engagement validation depth</a>
+            <a class="toc-link" href="#tree14"><span class="toc-link-num">T 14</span> Custom image vs runtime project generation</a>
+            <a class="toc-link" href="#tree15"><span class="toc-link-num">T 15</span> Quiz, file-based answer, or programmatic check</a>
+            <a class="toc-link" href="#tree16"><span class="toc-link-num">T 16</span> Lab layout and sidebar size</a>
+          </div>
+        </div>
+
+      <section id="s-howtoread" class="how-to-read">
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">—</span></div>
+          <div class="section-title-block">
+            <h2 class="section-title">How to Read</h2>
+          </div>
+        </div>
+
+        <div class="front-prose">
+          <ul class="how-to-read-list">
+            <li>Each tree is read top to bottom: questions are numbered, answers either resolve to a recommendation (green) or send you to the next question (gray).</li>
+            <li>Every recommendation card carries a single primary link to the implementing recipe in the companion Pattern Cookbook — chase that link when you are ready to implement.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="tree" id="tree1">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 01</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 1 of 16</div>
+            <h2 class="section-title">Choosing your compute</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Container, virtual machine, or sandbox preset</p>
+        <p class="tree-intro">The first architectural decision in any track. Boot time, capability, image selection, and which lifecycle helpers work all flow from this single choice. Walk the questions in order. Tree 11 covers the preset-versus-custom choice in more depth — start there if your product already has a preset.</p>
+
+        <div class="i-pane" data-tree="tree1"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree1"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Is there an Instruqt sandbox preset for the product you are demonstrating that covers roughly 90% or more of what you need?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the sandbox preset.</div>
+                <div class="rec-detail">Skip config.yml entirely. You eliminate boot timing, image pulls, and agent setup as failure modes — focus on assignment content. Fight the platform only if the preset is below a 60% fit. Tree 11 walks the preset-vs-custom decision in detail.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r6">→ Cookbook Recipe 6: Sandbox preset adoption</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does your track require any of the following: a display server (X11 or Xvfb), a real kernel and systemd, nested virtualization, or a custom image with heavy preinstalled dependencies?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — at least one</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No</div>
+              <div class="continue">Continue to <strong>Question 4</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Will a stock cloud image (Ubuntu LTS, Debian) work, or do you need a custom image with the dependencies pre-baked?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Stock image is fine</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a virtual machine with a stock cloud image.</div>
+                <div class="rec-detail">Boot is roughly one minute. Install your tooling in the setup script. The agent helpers (fail-message, set-status) are available on most platform-published VM images and on stock cloud images via bootstrap. If you build on a raw upstream image that doesn&#x27;t ship them, fall back to plain echo plus exit 1 in check scripts.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r2">→ Cookbook Recipe 2: Single VM track</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Need a custom image</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a virtual machine with a custom image.</div>
+                <div class="rec-detail">Bake heavy dependencies into a published image. Faster boot than installing at setup time. Trade-off: you maintain the image as the underlying product evolves. Tree 14 walks the custom-image-vs-runtime-generation decision.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r2">→ Cookbook Recipe 2: Single VM track (custom-image variant)</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 4</div>
+          <p class="q-text">Does your track use cloud CLIs (aws, az, gcloud)?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a container with the cloud-client image.</div>
+                <div class="rec-detail">Ships with AWS, Azure, and GCP CLIs preinstalled, plus common scripting tools. Image pull takes longer than the lighter shell image, but the alternative is installing CLIs yourself in setup.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r1">→ Cookbook Recipe 1: Single container track</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a container with the lightweight shell image.</div>
+                <div class="rec-detail">The fastest-booting option in the platform — well under thirty seconds. fail-message, set-status, and the agent variable commands are built in.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r1">→ Cookbook Recipe 1: Single container track</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree2">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 02</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 2 of 16</div>
+            <h2 class="section-title">Exposing an application to the browser</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Choosing the right tab type</p>
+        <p class="tree-intro">Most production tracks pair the terminal with one or more browser-rendered surfaces. The tab type is how you choose what the learner sees — and the choice depends entirely on what the surface connects to.</p>
+
+        <div class="i-pane" data-tree="tree2"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree2"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">What kind of surface is the learner viewing or interacting with?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Code or text the learner is editing</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a code tab.</div>
+                <div class="rec-detail">Pair an editable starter file with a second code tab pointing at a completed reference implementation as a built-in hint. The platform handles the file-editing UX entirely.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r31">→ Cookbook Recipe 31: Companion code-tab pair</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">A web UI served by your own infrastructure</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a service tab.</div>
+                <div class="rec-detail">Routes through Instruqt&#x27;s managed proxy. Critical: any client-side fetch() calls must use relative paths — the learner&#x27;s browser cannot resolve internal Docker hostnames. If you need a portal and an API, co-host them on the same hostname and port. If the upstream sets X-Frame-Options or a strict CSP, layer in the header-override pattern.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r25">→ Cookbook Recipe 25: Co-hosted portal plus API · Recipe 43: Service-tab CSP and header overrides</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">A cloud console or external web app</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">A graphical desktop application</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does the platform need to manage authentication and session state for the learner?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — provisioned cloud console</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a browser tab tied to a virtualbrowsers block.</div>
+                <div class="rec-detail">AWS, Azure, and GCP consoles authenticate using the credentials the platform provisioned for the lab. The virtualbrowsers block is what enables that handoff.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r15">→ Cookbook Recipe 15: VM plus virtual browser</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — public URL</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a website tab.</div>
+                <div class="rec-detail">Strict requirement: the URL must be HTTPS. An http:// URL causes instruqt track push to fail at validation, and the failure mode is silent at the platform level. ${_SANDBOX_ID} interpolation is supported in the url field for sandbox-public URLs.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r39">→ Cookbook Recipe 39: Sandbox-public URL exposure</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Is the learner using one specific application, a full Linux desktop, or a Windows RDP session?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">One application</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the VM plus KasmVNC single-app pattern.</div>
+                <div class="rec-detail">KasmVNC wraps a single GUI app and serves it over WebVNC on port 8080. Must run on a VM (display server requirement). Pre-pull the image in your custom VM image to avoid timeout during live setup.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r18">→ Cookbook Recipe 18: VM plus KasmVNC single-app</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Full Linux desktop</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the VM plus noVNC Linux desktop pattern.</div>
+                <div class="rec-detail">Install tightvncserver and xfce4 on the VM, then layer noVNC to bridge VNC to WebSocket. Use the sandbox-aware URL for the website tab so it ties to the VM&#x27;s external IP.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r17">→ Cookbook Recipe 17: VM plus noVNC Linux desktop</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Windows RDP</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the VM plus Guacamole desktop pattern.</div>
+                <div class="rec-detail">Heavier setup. Write the Guacamole user-mapping XML during VM setup and poll for RDP readiness on port 3389 before exiting setup. A native PowerShell terminal tab pointed at a Windows VM is a lighter alternative when learners only need a console, not a GUI.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r16">→ Cookbook Recipe 16: VM plus Guacamole desktop</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree3">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 03</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 3 of 16</div>
+            <h2 class="section-title">Composing multiple hosts</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">One host, many containers, many VMs, or hybrid</p>
+        <p class="tree-intro">Most tracks need exactly one host. Some need two or more — a workstation plus the system being managed, a workstation plus a database, a primary plus a replica. The shape of the composition determines the recipe. Take the compute decision from Tree 1 first, then walk this tree.</p>
+
+        <div class="i-pane" data-tree="tree3"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree3"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Does the lesson require more than one host of compute?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">No — one host is enough</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a single-host track.</div>
+                <div class="rec-detail">Recipe 1 (single container) or Recipe 2 (single VM), depending on Tree 1&#x27;s outcome. Most tracks land here. Resist adding hosts the lesson does not need — every additional host is another setup script, another boot timing window, another failure mode.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r1">→ Cookbook Recipe 1: Single container track · Recipe 2: Single VM track</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Yes — multiple hosts</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Are all the hosts the same compute type?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">All containers</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use multi-container composition.</div>
+                <div class="rec-detail">Declare each container under the containers block in config.yml, give each a hostname, and write per-host setup scripts (setup-workstation, setup-db, setup-queue). Containers boot in parallel, not in dependency order — always poll for readiness before any setup that depends on a peer service.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r3">→ Cookbook Recipe 3: Multi-container composition · Recipe 22: Wait-for-port readiness probe</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">All VMs</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use multi-VM composition.</div>
+                <div class="rec-detail">Declare each VM under virtualmachines. Boot is 60–120 seconds per host. Each VM&#x27;s setup script runs independently with no implicit ordering. If one host&#x27;s setup needs another running first, gate with an agent-variable hand-off.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r4">→ Cookbook Recipe 4: Multi-VM composition · Recipe 34: Agent variable cross-host hand-off</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Mixed — at least one container and one VM</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Is one host the workstation the learner uses, and the others are systems being managed?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — workstation plus managed VM(s)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use container plus managed VM.</div>
+                <div class="rec-detail">The workstation is a container (fast boot, terminal tab targets it). The systems being managed are VMs. Provision SSH from the workstation to each VM via agent-variable hand-off. When a managed host should not have a public IP, layer in IAP tunnel on GCP.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r5">→ Cookbook Recipe 5: Container plus managed VM · Recipe 11: Container plus private VM behind IAP tunnel</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — custom hybrid topology</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Compose explicitly in config.yml.</div>
+                <div class="rec-detail">Declare each host under its native block (containers, virtualmachines, sandbox). Write a setup script per host. Order assumptions become your problem — name them, document them in track_scripts comments, and gate with wait-for-port (Recipe 22) or agent-variable hand-off (Recipe 34) wherever ordering matters. Keep the topology as flat as the lesson allows.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r4">→ Cookbook Recipe 4: Multi-VM composition · Recipe 5: Container plus managed VM</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree4">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 04</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 4 of 16</div>
+            <h2 class="section-title">Identity and cloud account strategy</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Choosing the right cloud account block</p>
+        <p class="tree-intro">If the lesson touches a cloud, the cloud account block in config.yml is what makes the credentials show up in the workstation. The wrong block — or a block configured by copy-paste from a different cloud — produces silent auth failures that look like permission bugs. A common trap: scripts that reference INSTRUQT_AWS_*, INSTRUQT_AZURE_*, or INSTRUQT_GCP_* variables receive empty strings at runtime when no matching resource block is declared.</p>
+
+        <div class="i-pane" data-tree="tree4"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree4"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Does the lesson require any cloud account at all?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">No — pure local lab</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Skip cloud account blocks entirely.</div>
+                <div class="rec-detail">No aws_accounts, azure_subscriptions, or gcp_projects in config.yml. The track runs entirely on the compute you declared in Trees 1 and 3. Faster boot, simpler auth, fewer cost moving parts.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r1">→ Cookbook Recipe 1: Single container track · Recipe 2: Single VM track</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Yes — at least one cloud</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">How many distinct clouds does the lesson touch?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">One cloud</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">More than one cloud</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a multi-cloud track.</div>
+                <div class="rec-detail">Stack multiple cloud account blocks. Each cloud authenticates independently with its own provisioned credentials. Keep credential injection per-cloud — do not try to share a single setup snippet across AWS and Azure; their auth handshakes are not symmetric.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r10">→ Cookbook Recipe 10: Multi-cloud track wiring</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Which cloud is the lesson on?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">AWS</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use container plus AWS account.</div>
+                <div class="rec-detail">Declare aws_accounts. Auth uses provisioned IAM credentials injected as environment variables. If the lesson needs the AWS console rather than just the CLI, layer in a virtualbrowsers block and a browser tab.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r7">→ Cookbook Recipe 7: Container plus AWS account</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Azure</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use container plus Azure subscription.</div>
+                <div class="rec-detail">Declare azure_subscriptions. Azure has its own auth model and its own credential injection convention; do not copy-paste from an AWS track. The az login handshake is the most common copy-paste failure point.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r8">→ Cookbook Recipe 8: Container plus Azure subscription</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">GCP</div>
+              <div class="continue">Continue to <strong>Question 4</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 4</div>
+          <p class="q-text">Does the lesson involve a private GCP VM that should not have a public IP?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — private VM behind IAP</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use container plus private GCP VM behind IAP tunnel.</div>
+                <div class="rec-detail">SSH reaches the VM through Google&#x27;s Identity-Aware Proxy. The workstation runs gcloud compute start-iap-tunnel; SSH is configured to use that local port. The learner experiences a normal SSH session; the network shape is genuinely private.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r11">→ Cookbook Recipe 11: Container plus private VM behind IAP tunnel</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — standard public VM or no VM</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use container plus GCP project.</div>
+                <div class="rec-detail">Declare gcp_projects. Activate user credentials in the workstation&#x27;s setup so the terminal opens authenticated. For admin operations during setup, override the active credential — never leave the active gcloud session as the admin&#x27;s, or every check that validates &quot;the user can do X&quot; trivially passes.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r9">→ Cookbook Recipe 9: Container plus GCP project · Recipe 35: Cloud SDK auth credential override</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree5">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 05</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 5 of 16</div>
+            <h2 class="section-title">Cross-host coordination and state</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Passing values between hosts and across challenges</p>
+        <p class="tree-intro">A single-host track has one shell, one filesystem, and one process tree — state lives wherever you put it. The moment a track has two hosts, or one host plus multiple challenges, you need a discipline for moving values across those boundaries. The three options — agent variable, JSON broker, and cross-VM env passthrough — are not mutually exclusive; complex multi-VM tracks routinely use all three for different purposes.</p>
+
+        <div class="i-pane" data-tree="tree5"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree5"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Does any host need a value that is computed by a different host?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — cross-host value flow</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — values stay on one host</div>
+              <div class="continue">Continue to <strong>Question 4</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Is the value a single string, or a structured payload with several fields?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Single string (an IP, a token, an ID, a password)</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Structured payload (multiple fields, several consumers)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a JSON broker sidecar.</div>
+                <div class="rec-detail">Stand up a small HTTP server on a known port (commonly 8081) that returns the structured payload as JSON. Downstream VMs curl the broker URL during their own setup and parse with jq. Avoids the string-parsing-JSON-in-shell trap and avoids hitting agent variable&#x27;s effective single-key limit.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r40">→ Cookbook Recipe 40: JSON broker sidecar for cross-VM payload</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Is the cross-host signal &quot;host A is up&quot; (readiness), or a value the producer computed?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Just a readiness signal</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a wait-for-port readiness probe.</div>
+                <div class="rec-detail">The dependent host polls a port on the dependency until it accepts connections, then proceeds. Cheap, deterministic, no shared state needed. Common shapes: pg_isready -h db, redis-cli -h queue ping, or plain nc -z. Reserve blind sleep N for inherently undetectable waits like DNS TTL propagation.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r22">→ Cookbook Recipe 22: Wait-for-port readiness probe</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">A computed value</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the agent variable cross-host hand-off.</div>
+                <div class="rec-detail">Producing host writes with `agent variable set KEY=value`; consuming host reads with `agent variable get KEY`. Values persist for the life of the track and can also be surfaced in assignment.md via [[ Instruqt-Var ]] interpolation. Compose with wait-for-port when the consumer needs both a value and a readiness guarantee.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r34">→ Cookbook Recipe 34: Agent variable cross-host hand-off</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 4</div>
+          <p class="q-text">Does any environment variable need to persist on the workstation across challenges and across both login and non-login shells?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — persistent shell environment</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the profile.d plus .bashrc dual-write pattern.</div>
+                <div class="rec-detail">Login shells (such as su -) read /etc/profile.d/*.sh; non-login interactive shells (terminal tab default) read ~/.bashrc. Setting the value in only one place leaves the other shell with stale or missing state. Dual-write covers both.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r28">→ Cookbook Recipe 28: Profile.d plus .bashrc dual-write</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — values are local to a single script run</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">No state pattern needed.</div>
+                <div class="rec-detail">Plain bash variables in the setup or check script are sufficient. Resist promoting a transient value to agent variable or .bashrc just because it exists — every promoted value is a future debugging surface.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree6">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 06</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 6 of 16</div>
+            <h2 class="section-title">Choosing your check style</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Lazy, granular, or scored</p>
+        <p class="tree-intro">A check script is the conversation the lab has with the learner when they click Check. The shape of that conversation is a design choice. The wrong shape teaches the wrong thing — a single-line &quot;Try again&quot; on a check that tested nine things is a worse experience than no check at all. Tree 13 (engagement validation depth) covers when to add anti-cheat instrumentation on top of any of these.</p>
+
+        <div class="i-pane" data-tree="tree6"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree6"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Is this a certification-style track where the learner needs a numerical score at the end?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — scored assessment</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a scored certification rubric.</div>
+                <div class="rec-detail">Each criterion contributes points. The final challenge tallies and surfaces a percentage with color-coded bands (red below 50%, orange ≥50%, green 100%). The lab feels like an exam: items, score, breakdown of what was missed. A binary pass/fail at the final challenge is too coarse for assessment, and a granular check per challenge runs the lab too quickly to feel like one.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r37">→ Cookbook Recipe 37: Scored certification rubric</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — ordinary tutorial or demo</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does the assignment make several distinct claims about the system state, or one single claim?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Several distinct claims (e.g., user exists, has the right role, can SELECT, cannot DELETE)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use granular check messaging.</div>
+                <div class="rec-detail">Each assertion gets its own line: ✓ on pass, ✗ with a one-line hint on fail. The learner sees exactly which claim failed and what to do about it. Compose with a Python helper module for consistent reporting across many checks. Pair with the failure-message anatomy pattern so each fail line has a hint, a where, and a how-to-fix.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r36">→ Cookbook Recipe 36: Granular check messaging · Recipe 26: Helper Python module for tests · Recipe 50: Failure-message anatomy</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">One claim only</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the lazy pattern.</div>
+                <div class="rec-detail">Plain bash: a single test, a fail-message line where the helper is available (or echo + exit 1 if the image doesn&#x27;t ship it), exit 0 otherwise. Resist inventing structure for a single assertion. The lazy pattern is not cynical — it is the right shape when the lesson is the right shape.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r50">→ Cookbook Recipe 50: Failure-message anatomy</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree7">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 07</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 7 of 16</div>
+            <h2 class="section-title">Structuring your assignment body</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Step-based, prose, recap, or read-only intro</p>
+        <p class="tree-intro">Every challenge has a body — the markdown the learner reads in the assignment pane. The body&#x27;s shape signals what kind of work is ahead: study this, do these steps, recall what we covered, complete this single task. Picking the wrong shape works against the lesson.</p>
+
+        <div class="i-pane" data-tree="tree7"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree7"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Does the learner perform any concrete action in this challenge — typing a command, editing a file, clicking through a UI — or is the body itself the lesson?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">No action — the body is the lesson</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a read-only intro challenge.</div>
+                <div class="rec-detail">No check script. The body is the lesson. The learner reads the diagram, the architecture, the &quot;what we are building,&quot; then clicks to advance. Use sparingly — read-only challenges consume a slot in the track without producing a graded outcome.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r53">→ Cookbook Recipe 53: Read-only intro challenge</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">The learner does something concrete</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Is this challenge primarily about reinforcing concepts the learner has already practiced, or producing new work?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Reinforcing prior material — synthesis or recall</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a mid-track recap challenge.</div>
+                <div class="rec-detail">Lightweight check, focused body that re-summarizes what the prior block covered. Often combined with a small synthesis exercise (file-based quiz, single command). The pacing function is the point; the check is secondary.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r52">→ Cookbook Recipe 52: Mid-track recap challenge</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Producing new work</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Does the work involve multiple discrete steps the learner must perform in sequence, or is it a single focused task?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Multi-step task — sequence matters</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the step-based body structure.</div>
+                <div class="rec-detail">Number the steps. Keep each step short. Code blocks are runnable; learner-supplied placeholders (`&lt;DOCUMENT_ID&gt;`) sit in plain or `copy`-modifier blocks so the learner cannot run them blindly. Pair opt-in `&lt;details&gt;` collapsibles with the step body for graduated hints.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r44">→ Cookbook Recipe 44: Step-based body structure · Recipe 51: Layered hint · Recipe 54: Opt-in details collapsible</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Single-task lab — short and direct</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a free-prose body.</div>
+                <div class="rec-detail">Two or three paragraphs of context, one explicit goal, one or two code snippets, done. Do not invent steps for a one-step task. The numbered-list shape implies multiple steps; using it for a single step adds noise to the page.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree8">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 08</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 8 of 16</div>
+            <h2 class="section-title">Generating project files in setup</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Heredoc, sparse-checkout, or full git clone</p>
+        <p class="tree-intro">Most tracks need to put a project tree in front of the learner at the start of a challenge: a config file to edit, a function to implement, a folder of fixtures. There are three reasonable ways to do that, and the choice depends on size, sensitivity of source, and how much editorial control you want. Tree 14 covers the related image-vs-runtime decision when the dependency stack itself is heavy.</p>
+
+        <div class="i-pane" data-tree="tree8"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree8"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">How big is the project tree the learner needs?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Small — single file or a handful, total under ~50 KB</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use heredoc-based project generation.</div>
+                <div class="rec-detail">Write the files inline from the setup script with `cat &gt; path/to/file &lt;&lt; &#x27;EOF&#x27; ... EOF`. The track is fully self-contained: no external repo to maintain, no clone failure mode, no rate limit. Quote the heredoc terminator (single quotes around &#x27;EOF&#x27;) if the body should not be interpolated.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r24">→ Cookbook Recipe 24: Heredoc-based project generation</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Medium — a few directories with a known dependency set</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Large — a real codebase</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does the learner need to see and edit one specific file with a &quot;completed&quot; reference version visible alongside?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — file editing with a reference</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the companion code-tab pair.</div>
+                <div class="rec-detail">Generate the working file and the reference implementation as two separate files in the project tree. Surface them as two `code` tabs: the working file is editable, the reference is read-only. The learner has the answer one tab away — which is the point.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r31">→ Cookbook Recipe 31: Companion code-tab pair</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — just generate the tree and move on</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Heredoc the project tree.</div>
+                <div class="rec-detail">Faster than git clone, no external dependency, the entire tree lives in the track repo. For a directory tree, mkdir the folders first, then heredoc each file. Acceptable up to roughly 100 KB; past that the cost of the heredoc grows past the cost of a managed dependency.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r24">→ Cookbook Recipe 24: Heredoc-based project generation</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Is the source repository public, or is it private and credentialed?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Public, full repo is fine</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">git clone from a versioned repo.</div>
+                <div class="rec-detail">Pin to a tag, never to a branch. The lab is reproducible only if the upstream is reproducible — a moving branch will eventually break the track silently. Mirror the repo internally if the upstream is not under your control.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Private, or you only need a subset</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use sparse-checkout with a short-lived token.</div>
+                <div class="rec-detail">git sparse-checkout fetches only the paths you need, which keeps the on-disk footprint small and avoids exposing unrelated source. Pull the token from the secrets block, never from environment in config.yml or a hardcoded URL — both leak through repo history. The setup script uses the token only for the clone and immediately unsets it.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r41">→ Cookbook Recipe 41: Sparse-checkout from a private repo with a short-lived token</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree9">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 09</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 9 of 16</div>
+            <h2 class="section-title">Branding depth</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">How custom should the lesson feel</p>
+        <p class="tree-intro">Branding is a spectrum, not a switch. At one end: a stock root prompt and a generic shell. At the other: a non-root user with a customer-themed prompt, a custom CLI wrapper, a branded portal page, and loading messages that name the product. The right point on the spectrum is set by what the lesson is teaching.</p>
+
+        <div class="i-pane" data-tree="tree9"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree9"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Is the lesson teaching the customer&#x27;s own product, or a generic technology that happens to be relevant?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Generic technology (Linux, Postgres, Kubernetes, Terraform)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Skip branding.</div>
+                <div class="rec-detail">Default shell prompt, root user, no CLI wrapper. The technology is the lesson; branding only competes for attention. The track is shorter to maintain and easier to retarget if the customer pivots.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">The customer&#x27;s product</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does the lesson need a branded user identity — a specific username that appears in prompts, screenshots, and shell history?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — non-root, named user</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the non-root user pattern.</div>
+                <div class="rec-detail">Create the user in setup, copy or symlink dotfiles so env vars work in their session, set the prompt via /etc/profile.d. Combine with profile.d plus .bashrc dual-write so login and non-login shells both pick up the branded environment.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r29">→ Cookbook Recipe 29: Non-root user pattern · Recipe 28: Profile.d plus .bashrc dual-write</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — root is fine, prompt only</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Does the customer have a CLI the lesson should demonstrate?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — a real production CLI</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Install the real CLI in the workstation image.</div>
+                <div class="rec-detail">Bake it in if you control the image; install it in setup if not. Ensure it lands on PATH. If the CLI calls a backend that does not exist in the lab, wrap it with the idempotent binary wrapper pattern so retries are safe and re-runs do not infinitely re-wrap a wrapper.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r27">→ Cookbook Recipe 27: Idempotent binary wrapper</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Yes — but it is a teaching aid (mock, demo-shaped)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Build a custom CLI wrapper.</div>
+                <div class="rec-detail">A small Python or Node CLI that calls the lab&#x27;s API (real or mocked). Use a library like httpx for HTTP and rich for output formatting — the learner sees colored tables, formatted JSON, and helpful error messages. The CLI is part of the lesson, not just a polish item.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r30">→ Cookbook Recipe 30: Custom CLI wrapper · Recipe 13: Container plus mock REST API and custom CLI</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — prompt and portal only</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Apply prompt and portal page only.</div>
+                <div class="rec-detail">Set the prompt via profile.d. A branded portal page (co-hosted portal plus API) carries the visual identity. A branded credential dashboard is the smallest &quot;looks like a product&quot; surface that pays for itself on demos. This is the lightest branded shape — present enough to feel custom, light enough to maintain.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r28">→ Cookbook Recipe 28: Profile.d plus .bashrc dual-write · Recipe 25: Co-hosted portal plus API · Recipe 55: Branded credential dashboard</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree10">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 10</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 10 of 16</div>
+            <h2 class="section-title">Lab pacing and the track clock</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">timelimit, idle_timeout, pausable, skipping_enabled</p>
+        <p class="tree-intro">A track has a clock whether you set one or not. Choosing the clock settings deliberately matters because the wrong settings sabotage the experience: a workshop that times out mid-lesson, a self-paced lab that demands an unbroken hour, an instructor who cannot skip a challenge that ran long.</p>
+
+        <div class="i-pane" data-tree="tree10"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree10"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">How will the lab be delivered?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Live (workshop, instructor demo, conference session)</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Self-paced (asynchronous, learner picks when)</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does the live session have a hard wall-clock deadline?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — fixed end time (e.g., a 60-minute workshop)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Tight timed-live configuration.</div>
+                <div class="rec-detail">Set timelimit to the deadline (60m). Set show_timer: true so the learner sees the clock. Disable pausable. Disable skipping_enabled — live mode is sequential. Loading messages should be short; per-challenge enhanced_loading is overkill when the instructor is talking through it.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — instructor controls pacing</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Loose instructor-led configuration.</div>
+                <div class="rec-detail">Set timelimit generously (2–4 hours). Disable show_timer — visible countdowns create artificial pressure when there is no real deadline. Enable skipping_enabled so the instructor can jump challenges as the demo evolves. Disable pausable.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Will most learners complete the lab in one sitting, or will they typically need to step away?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Step-away likely (lab takes longer than 30 minutes)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Pausable, resumable configuration.</div>
+                <div class="rec-detail">Set pausable: true and pausable_ttl to 7 days (604800) or longer. Leave idle_timeout at the platform default — the learner pauses explicitly when stepping away, rather than racing the idle clock. Enable skipping_enabled so a returning learner can resume without re-doing prior challenges. Lab state must survive an arbitrary suspend — avoid in-memory caches and tmux processes. Combine with defensive challenge-level setup so a returning learner does not hit broken state.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r32">→ Cookbook Recipe 32: Defensive challenge-level setup · Recipe 33: Idempotent solve script</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">One sitting (lab takes 30 minutes or less)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Single-sitting configuration.</div>
+                <div class="rec-detail">Disable pausable. Set idle_timeout: 30m to forgive a short interruption (a phone call, a tab switch) without ending the session. Disable skipping_enabled — the lab is short enough to complete linearly, and skipping invites confusion when later checks depend on earlier setup.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree11">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 11</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 11 of 16</div>
+            <h2 class="section-title">Sandbox preset vs custom config.yml</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">When the preset is enough and when it is a wall</p>
+        <p class="tree-intro">A sandbox preset gives you a shared, fast-starting environment that the platform manages for you. The trade is loss of control: you can&#x27;t run setup scripts in track_scripts, can&#x27;t bring a custom image, can&#x27;t compose multiple hosts, can&#x27;t inject secrets, can&#x27;t shape per-track networking. The preset is a real win when its defaults already match the lesson; it is a wall the moment they don&#x27;t. New contributors often pick presets thinking they&#x27;re &quot;easier&quot; and then hit that wall when a setup script becomes necessary — start with config.yml if there is any doubt.</p>
+
+        <div class="i-pane" data-tree="tree11"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree11"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Is the lesson purely click-through against a managed UI (a hosted Kibana, the AKS console, Postgres in a managed playground)?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — UI clicks only</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — there is a terminal, a script, or non-trivial setup</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a custom config.yml.</div>
+                <div class="rec-detail">If the lesson needs setup scripts, custom images, multiple hosts, secrets injection, or per-track networking — any one of those — the preset cannot do it. Skip ahead and shape the track in config.yml.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r1">→ Cookbook Recipe 1: Single container track · Recipe 2: Single VM track</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does an existing preset&#x27;s pre-installed tooling cover roughly 90% or more of what the lesson needs?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — fit is ≥ ~90%</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the sandbox preset.</div>
+                <div class="rec-detail">Skip config.yml entirely. Sandbox preset adoption eliminates boot timing, image pulls, and agent setup as failure modes. The first thirty seconds of the learner experience cost you nothing.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r6">→ Cookbook Recipe 6: Sandbox preset adoption</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Partial fit — 60% to 90%</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Below ~60%</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a custom config.yml.</div>
+                <div class="rec-detail">Below 60% fit, you spend more effort working around the preset than you would have spent shaping the environment yourself. Pick the compute via Tree 1 and shape the rest in config.yml.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Will the gap require setup scripts, secret injection, multiple hosts, or per-track networking — any of which a preset cannot provide?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — at least one of those</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a custom config.yml.</div>
+                <div class="rec-detail">The preset stops at the platform boundary. The moment you need track_scripts, a secrets block, more than one host, or shaped networking, the preset locks you out. Move to config.yml early — refactoring later costs more than starting over.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — small layered tweaks at challenge level</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the sandbox preset with challenge-level overrides.</div>
+                <div class="rec-detail">Most preset gaps that aren&#x27;t infrastructure can be papered over in the assignment body or with per-tab settings (cmd:, workdir:, header overrides on a service tab). If the gap stays in the assignment layer, the preset still pays.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r6">→ Cookbook Recipe 6: Sandbox preset adoption · Recipe 43: Service-tab CSP and header overrides</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree12">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 12</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 12 of 16</div>
+            <h2 class="section-title">Where to keep secret material</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">secrets block, environment block, runtime fetch, or never</p>
+        <p class="tree-intro">Anything sensitive — an API key, an SSH private key, a registry credential, a license key, a long-lived service token — needs a deliberate home. Two anti-patterns dominate: baking the value into config.yml&#x27;s environment block (visible to every learner via the debug log, and committed to git history forever) and base64-encoding it inside a setup script (base64 is not encryption). The right home depends on what the value is and how it gets used. The general framing: anything that proves identity or grants access goes in the secrets block; anything that just shapes behavior can sit in environment.</p>
+
+        <div class="i-pane" data-tree="tree12"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree12"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Is the value sensitive — a credential, a key, a token, a license, anything that proves identity or grants access?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">No — it is just configuration (a region name, a feature flag, a service URL)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Put it in the environment block.</div>
+                <div class="rec-detail">The environment block is the right place for non-sensitive shape parameters. They are visible in the debug log on purpose — the lab is supposed to surface them. Reserve secrets for actual credentials.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Yes — sensitive</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Does the credential need to be the same value for every learner, or unique per sandbox?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Same value for every learner (a service license, a shared API key, a CA private key)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Put it in the secrets block.</div>
+                <div class="rec-detail">Declare `secrets: - name: MY_SECRET` in config.yml; set the value in the Instruqt platform UI. Secrets are injected at runtime, never committed to git, and never appear in the debug log. Read the secret in your setup script, write it to disk only as long as it is needed, then delete it. This is the right home for SSH private keys, registry credentials (raw dockerconfigjson, not base64), and CA private keys used to mint per-host TLS certs.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Unique per sandbox or per learner</div>
+              <div class="continue">Continue to <strong>Question 3</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 3</div>
+          <p class="q-text">Is the unique value something the platform already provisions for you (cloud account credentials, a sandbox-scoped TLS certificate)?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Yes — platform-provisioned</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the platform-provided injection — no secrets entry needed.</div>
+                <div class="rec-detail">Cloud credentials arrive as INSTRUQT_AWS_*, INSTRUQT_AZURE_*, or INSTRUQT_GCP_* environment variables when the matching resource block (aws_accounts, azure_subscriptions, gcp_projects) exists in config.yml. provision_ssl_certificate: true on a VM mints and rotates a per-sandbox cert, retrievable from GCP instance metadata at runtime. Both patterns are auth-free from your perspective: you neither inject nor delete the credential — the platform does.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r7">→ Cookbook Recipe 7: Container plus AWS account · Recipe 8: Container plus Azure subscription · Recipe 9: Container plus GCP project</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">No — fetch from an external secret store at runtime</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Fetch at setup time from a secret store, using a bootstrap secret.</div>
+                <div class="rec-detail">Hold a long-lived bootstrap credential (service-account JSON, GCS-bucket reader, Vault token) in the secrets block, use it once during setup to fetch per-sandbox material from your store, then unset it. The bootstrap credential never touches disk; the per-sandbox material lives only as long as the sandbox does. Suitable for sparse-checkout from a private repo, dynamic license issuance, and per-attendee credential generation.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r41">→ Cookbook Recipe 41: Sparse-checkout from a private repo with a short-lived token</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree13">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 13</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 13 of 16</div>
+            <h2 class="section-title">Engagement validation depth</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">When to add anti-cheat instrumentation, and how much</p>
+        <p class="tree-intro">Engagement validation is the toolbox of patterns that confirm a learner actually did the lesson rather than clicked Check ten times in a row: shell-history forensics, anti-rapid-clicking attempt counters, marker files, cron-based pause trackers, query-counter snapshots. The patterns are powerful but heavy. Use them where the publisher needs to detect cheating or attribute progress to specific challenges. Avoid them where they will frustrate genuine learners who legitimately skip ahead or click through quickly.</p>
+
+        <div class="i-pane" data-tree="tree13"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree13"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Is the track gated — certification, graded, used for hiring, or otherwise relied on by a downstream decision?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">No — demo, workshop, self-paced tutorial, internal training</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Skip engagement validation entirely.</div>
+                <div class="rec-detail">No history forensics, no anti-rapid-click counters, no marker files. The cost of falsely flagging a fast learner outweighs the value of catching a careless one. Lean on the lesson and the granular check messaging — let the lab teach.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r36">→ Cookbook Recipe 36: Granular check messaging</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Yes — gated track</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">What is the dominant failure mode you are guarding against?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Click-through cheating (learner clicks Check repeatedly without engaging)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Add an attempt counter and a shell-history check.</div>
+                <div class="rec-detail">Increment a counter file on every check invocation; require N+ entries in the shell&#x27;s history log (mongosh log, .bash_history, the equivalent for whichever shell the learner uses) before the check passes. Non-interactive bash disables history by default — turn it on explicitly in the check (set -o history; export HISTFILE=...; history -r). Pair with a layered hint so the learner who is genuinely stuck has a way forward.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r51">→ Cookbook Recipe 51: Layered hint</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Skip-ahead breakage (learner jumps a challenge that later checks depend on)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Make every solve idempotent and add defensive challenge-level setup.</div>
+                <div class="rec-detail">A challenge-level setup-{hostname} that re-creates the prerequisite state if absent makes skipping_enabled safe. Solve scripts validate and re-create the entire prerequisite chain (server running → database exists → table exists → data present) before executing the current step. The lab survives any starting point.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r32">→ Cookbook Recipe 32: Defensive challenge-level setup · Recipe 33: Idempotent solve script</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Off-platform answer entry (learner types an answer that should be graded against live truth)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a file-based answer with live-truth comparison.</div>
+                <div class="rec-detail">Provide a thin CLI on PATH (e.g., /usr/local/bin/submit) or a documented file path the learner writes to. The check script computes the expected value live from the data source and compares — never embed the expected answer in the check itself. Strip whitespace, normalize case, and emit a fail-message that tells the learner what was wrong without giving the answer away.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r49">→ Cookbook Recipe 49: File-based quiz answers</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">TTL or pause abuse (learner pauses indefinitely or restarts to dodge time limits)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Add scored rubric plus pause tracker.</div>
+                <div class="rec-detail">A scored rubric attaches an objective score to the run, so a learner who pauses and resumes still has to pass criteria. A cron-based pause tracker (where supported) emits telemetry while paused so excessive TTL use is observable. Reserve this combination for high-stakes certifications — the operational complexity is real.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r37">→ Cookbook Recipe 37: Scored certification rubric</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree14">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 14</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 14 of 16</div>
+            <h2 class="section-title">Custom image vs runtime project generation</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Bake into a published image, or build at setup time</p>
+        <p class="tree-intro">Either you publish a custom image with the dependencies pre-installed, or you build the environment at setup time using heredocs and install commands. Both are legitimate. The trade-off shapes most architecture choices for a track. Custom image: fast learner experience, slow author iteration (Packer rebuild loop). Heredoc and install scripts: self-contained track, longer learner cold starts. Pick deliberately. This tree pairs with Tree 8 (project files) — they answer related but distinct questions.</p>
+
+        <div class="i-pane" data-tree="tree14"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree14"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Roughly how long does the install plus dependency stack take from a stock cloud image?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Under ~30 seconds</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Install at runtime — no custom image.</div>
+                <div class="rec-detail">A 30-second runtime install is invisible against the VM boot itself. The author iteration loop (edit setup script → push → re-run) is much faster than any image rebuild cycle. Any package install you can express in 5 to 10 lines of apt-get plus a heredoc belongs here.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r24">→ Cookbook Recipe 24: Heredoc-based project generation</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">30 seconds to 3 minutes</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Over 3 minutes — heavy stack (a langchain pipeline, k3s plus a workshop-specific Kubernetes distro, an observability stack)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Bake into a custom image.</div>
+                <div class="rec-detail">Once the install pushes past three minutes, the cold-start cost dominates the learner experience. Move the install into a Packer build, publish the image, reference it from config.yml. You absorb the rebuild cycle once per dependency change instead of on every play. For Kubernetes labs, a pre-baked k3s VM with a control-plane auto-join script gives you a sub-minute cluster on first challenge.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r38">→ Cookbook Recipe 38: Pre-baked k3s VM with control-plane auto-join · Recipe 2: Single VM track (custom-image variant)</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">How often does this dependency stack change during track iteration?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Frequently — daily or weekly while the track is in active iteration</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Install at runtime, accept the boot cost.</div>
+                <div class="rec-detail">A 1–3 minute setup penalty is cheaper than a Packer rebuild on every iteration. Pre-pull Docker images and warm Go module caches synchronously inside setup so the boot cost lands in one place and stays predictable. Move to a custom image only after the dependency surface stops moving.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r20">→ Cookbook Recipe 20: Pre-pull Docker images in setup · Recipe 21: Bootstrap wait</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Stable, or shipping the same scenario across many tracks</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Bake into a custom image.</div>
+                <div class="rec-detail">If many tracks share the same heavy stack, the rebuild loop happens once and pays back across every track that uses it. Apply the no-credentials-baked-in discipline rigorously — custom images get cached, copied, and shared, so anything baked in is effectively public. Hold credentials in the secrets block (Tree 12) and write them to disk only at setup time.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r2">→ Cookbook Recipe 2: Single VM track (custom-image variant)</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree15">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 15</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 15 of 16</div>
+            <h2 class="section-title">Quiz, file-based answer, or programmatic check</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">Picking the validation shape for a question or short-answer challenge</p>
+        <p class="tree-intro">Three valid shapes for &quot;did the learner get the right answer.&quot; The native quiz challenge type is easiest but only covers multiple-choice. The file-based pattern (learner echoes an answer to a known path) is a strict generalization — any short-answer question, custom validation logic, targeted fail-message feedback. A full programmatic check (Mocha/Chai for JS, pytest, plain bash) is for cases where the answer is the state of a system, not a string. Pick the simplest shape the lesson supports.</p>
+
+        <div class="i-pane" data-tree="tree15"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree15"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">What is the learner producing — a selection from options, a typed value, or a system state?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Selection from a fixed set of options</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">A short typed value (a name, a number, a token)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the file-based answer pattern.</div>
+                <div class="rec-detail">Learner runs `echo &quot;answer&quot; &gt; /tmp/answer` (or invokes a thin /usr/local/bin/submit wrapper that does the same). The check script reads, normalizes whitespace, normalizes case, and compares. This unlocks targeted fail-message feedback (&quot;close — try the singular form&quot;), custom comparison logic, and live-truth comparison where the expected value is computed at check time from the data source rather than embedded in the script.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r49">→ Cookbook Recipe 49: File-based quiz answers</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">A system state (a row exists, a service is running, a file has the right contents)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use a programmatic check.</div>
+                <div class="rec-detail">Plain bash for trivial cases, the Python helper module for many parallel claims, or a real test framework (Mocha/Chai for JS courses, pytest for Python courses) when the assertions are layered enough that a structured runner pays for itself. Use granular check messaging so each assertion produces its own pass/fail line. Pair with the failure-message anatomy: hint, where, how-to-fix.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r36">→ Cookbook Recipe 36: Granular check messaging · Recipe 26: Helper Python module for tests · Recipe 50: Failure-message anatomy</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Is plain multiple-choice with no per-option feedback enough, or does the lesson need targeted feedback per wrong answer?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Plain multiple-choice is enough</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the native quiz challenge type.</div>
+                <div class="rec-detail">Set type: quiz in frontmatter; provide answers (array) and solution (array of 0-based indices). Multi-select is supported by listing multiple correct indices. The body should read &quot;Select all answers that apply&quot; when more than one is correct. The native type renders the option list, handles state, and grades — no check script.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Need targeted feedback per wrong answer</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Use the file-based answer pattern with a challenge-typed challenge.</div>
+                <div class="rec-detail">Set type: challenge, list the options in the body, and have the learner write their pick to a file (or invoke a submit wrapper). The check script branches on the value: a wrong A gets one fail-message, a wrong C gets a different one. Native quiz cannot do this. The cost is one extra script; the gain is feedback that actually teaches.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r49">→ Cookbook Recipe 49: File-based quiz answers</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+
+      <section class="tree" id="tree16">
+
+        <div class="section-label">
+          <div class="section-pill-wrap"><span class="section-pill">T 16</span></div>
+          <div class="section-title-block">
+            <div class="section-eyebrow">Tree 16 of 16</div>
+            <h2 class="section-title">Lab layout and sidebar size</h2>
+          </div>
+        </div>
+
+        <p class="tree-subtitle">AssignmentLeft vs AssignmentRight, and how wide the assignment pane should be</p>
+        <p class="tree-intro">The default_layout and default_layout_sidebar_size fields under lab_config decide where the assignment lives and how much screen real estate it claims. The defaults work for most tracks; the wrong settings are surprisingly costly when the lesson does not match. AssignmentRight (tool area is the visual focus) is used by roughly 80% of tracks and is the right starting point if you are unsure. The sidebar size is a percentage of screen width — values around 30 give wide tools and a narrow assignment, values around 70 give a wide assignment and a narrow tool area. A challenge can override either via challenge-level lab_config (or precise multi-pane custom_layout) when one challenge in the track is structurally different from the rest.</p>
+
+        <div class="i-pane" data-tree="tree16"></div>
+
+        <div class="print-tree-diagram" data-tree-diagram="tree16"></div>
+
+        <div class="static-view">
+
+        <div class="question">
+          <div class="q-num">Question 1</div>
+          <p class="q-text">Where does the learner spend most of their time — reading the assignment, or working in the tool area (terminal, code editor, browser)?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Reading — content-heavy, lots of explanation per step</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">AssignmentLeft, sidebar size around 45.</div>
+                <div class="rec-detail">Setting default_layout: AssignmentLeft puts the assignment text on the left where reading flows naturally. A sidebar size in the 40 to 50 range gives the assignment enough width to render diagrams, tables, and longer explanations without forcing the learner to scroll. Suitable for SaaS-demo and reading-heavy training tracks where the tool area is supporting rather than primary.</div>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Working — code-heavy, terminal-heavy, brief instructions</div>
+              <div class="continue">Continue to <strong>Question 2</strong>.</div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Mixed — varies by challenge</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">Default to AssignmentRight at sidebar size 33, override per challenge.</div>
+                <div class="rec-detail">Track-level defaults set the baseline. Individual challenges that need a different shape can override with challenge-level lab_config — default_layout and default_layout_sidebar_size both accept overrides. For a finale that needs a precise multi-pane split (assignment + editor + terminal + browser visible at once), use custom_layout with a JSON-encoded layout tree.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question">
+          <div class="q-num">Question 2</div>
+          <p class="q-text">Is the primary tool a terminal or a wide visual surface (a code editor with side-by-side files, a virtual browser, a Kibana-style multi-pane UI)?</p>
+          <div class="branches">
+            <div class="branch">
+              <div class="branch-label">Terminal-primary</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">AssignmentRight, sidebar size 30.</div>
+                <div class="rec-detail">A narrow assignment and a wide terminal is the standard code-heavy lab shape. Combine with a non-root user pattern and a clean prompt so the wide terminal looks like a real workstation. Loading messages should match the brand if the track is customer-facing — small touches read at the size of the actual visible terminal.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r29">→ Cookbook Recipe 29: Non-root user pattern · Recipe 28: Profile.d plus .bashrc dual-write</a>
+              </div>
+            </div>
+            <div class="branch">
+              <div class="branch-label">Wide visual surface (UI-heavy, virtual browser, code editor with companion tabs)</div>
+              <div class="recommendation">
+                <div class="rec-label">Recommendation</div>
+                <div class="rec-title">AssignmentRight, sidebar size 33 — and consider a per-challenge custom_layout for the finale.</div>
+                <div class="rec-detail">Sidebar 33 is the safe default. When a challenge benefits from showing the assignment, the editor, and the rendered output simultaneously, encode a precise layout tree under challenge-level lab_config.custom_layout. Use the reserved tab IDs &quot;assignment&quot; and &quot;feedback&quot; in the layout array — they refer to the platform&#x27;s built-in panels and do not need to be declared in the frontmatter tabs list.</div>
+                  <a class="rec-link" href="../cookbook-out/pattern-cookbook.html#r31">→ Cookbook Recipe 31: Companion code-tab pair</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </section>
+    
+</div><!-- /.content -->
+</main>
+</div><!-- /.layout -->
+<button aria-label="Back to top" id="btt" title="Back to top">↑</button>
+<script>
+  /* ── Reading progress + back-to-top ── */
+  const progress = document.getElementById('progress');
+  const btt = document.getElementById('btt');
+
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    progress.style.width = (pct * 100) + '%';
+    btt.classList.toggle('show', window.scrollY > 300);
+  });
+  btt.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  /* ── Scroll-driven sidebar active state ── */
+  const navItems = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(i => i.classList.remove('active'));
+        const active = document.querySelector(`.nav-item[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -80% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+
+  /* ════════════════════════════════════════════════════════════════
+     DECISION TREE ENGINE v2 — adds SVG mini-map + print diagram.
+     Authors don't edit this. HTML is the schema.
+     ════════════════════════════════════════════════════════════════ */
+  (function () {
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    /* Layout the tree as a horizontal node graph for the SVG mini-map.
+       Returns: { nodes: [{id, x, y, type, qn}], edges: [{from, to}] }
+       Simple BFS layout — questions space out horizontally,
+       branches arrange vertically off each question. */
+    function layoutTree(qs, firstQ) {
+      const nodes = [];
+      const edges = [];
+      const placed = {};
+      const cols = {};        // column index per question
+      const colHeights = {};  // running vertical placement per column
+
+      let nextCol = 0;
+      function placeQuestion(qn, col) {
+        if (placed[`q${qn}`] !== undefined) return placed[`q${qn}`];
+        const colId = col;
+        if (cols[colId] === undefined) cols[colId] = 0;
+        const row = cols[colId]++;
+        const node = { id: `q${qn}`, type: 'q', qn, col: colId, row };
+        nodes.push(node);
+        placed[`q${qn}`] = node;
+        return node;
+      }
+
+      // BFS placement from first question
+      const queue = [{ qn: firstQ, col: 0 }];
+      const seen = new Set();
+      while (queue.length) {
+        const { qn, col } = queue.shift();
+        if (seen.has(qn)) continue;
+        seen.add(qn);
+        const q = qs[qn];
+        if (!q) continue;
+        const qNode = placeQuestion(qn, col);
+        let terminalIdx = 0;
+        q.branches.forEach((b, bi) => {
+          if (b.type === 'rec') {
+            const terminalCol = col + 1;
+            if (cols[terminalCol] === undefined) cols[terminalCol] = 0;
+            const row = cols[terminalCol]++;
+            const terminalNode = {
+              id: `q${qn}b${bi}`, type: 't', qn, bi,
+              col: terminalCol, row
+            };
+            nodes.push(terminalNode);
+            edges.push({ from: qNode.id, to: terminalNode.id, branchIdx: bi, fromQ: qn });
+            terminalIdx++;
+          } else if (b.type === 'next' && b.target) {
+            if (!seen.has(b.target)) {
+              queue.push({ qn: b.target, col: col + 1 });
+            }
+            // Edge will be drawn after target is placed
+            edges.push({ from: qNode.id, to: `q${b.target}`, branchIdx: bi, fromQ: qn });
+          }
+        });
+      }
+
+      // Compute x,y for each node based on col/row
+      const colCount = Object.keys(cols).length;
+      const maxRow = Math.max(...Object.values(cols), 1);
+      const W = 200, H = 60, PAD_X = 10, PAD_Y = 8;
+      const colSpacing = (W - PAD_X * 2) / Math.max(colCount - 1, 1);
+      nodes.forEach(n => {
+        const colHeight = cols[n.col];
+        const rowSpacing = colHeight > 1 ? (H - PAD_Y * 2) / (colHeight - 1) : 0;
+        n.x = PAD_X + n.col * colSpacing;
+        n.y = colHeight > 1 ? PAD_Y + n.row * rowSpacing : H / 2;
+      });
+
+      return { nodes, edges, viewBox: `0 0 ${W} ${H}` };
+    }
+
+    function renderMinimap(layout, state) {
+      const { nodes, edges, viewBox } = layout;
+      const nodeMap = {};
+      nodes.forEach(n => nodeMap[n.id] = n);
+
+      // Determine which nodes are visited / active / reached
+      const visitedQs = new Set(state.stack.map(s => `q${s.qFrom}`));
+      const currentQ = state.curQ != null ? `q${state.curQ}` : null;
+      const resultId = state.result && state.stack.length
+        ? `q${state.stack[state.stack.length - 1].qFrom}b${findBranchIdx(state)}`
+        : null;
+
+      const activeEdges = new Set();
+      state.stack.forEach((s, idx) => {
+        const fromId = `q${s.qFrom}`;
+        // Find the edge matching this choice
+        const matchingEdge = edges.find(e =>
+          e.fromQ === s.qFrom && e.branchIdx === s.branchIdx
+        );
+        if (matchingEdge) activeEdges.add(`${matchingEdge.from}>${matchingEdge.to}`);
+      });
+
+      const parts = [`<svg viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet">`];
+
+      // Edges first (under nodes)
+      edges.forEach(e => {
+        const a = nodeMap[e.from], b = nodeMap[e.to];
+        if (!a || !b) return;
+        const key = `${e.from}>${e.to}`;
+        const cls = activeEdges.has(key) ? 'mm-edge active' : 'mm-edge';
+        const midX = (a.x + b.x) / 2;
+        parts.push(`<path class="${cls}" d="M ${a.x},${a.y} C ${midX},${a.y} ${midX},${b.y} ${b.x},${b.y}"/>`);
+      });
+
+      // Nodes
+      nodes.forEach(n => {
+        let cls = 'mm-node';
+        if (n.type === 't') {
+          cls += ' terminal';
+          if (n.id === resultId) cls += ' reached';
+        } else {
+          if (n.id === currentQ && !state.result) cls += ' active';
+          else if (visitedQs.has(n.id)) cls += ' visited';
+        }
+        const r = n.type === 't' ? 3 : 4;
+        parts.push(`<circle class="${cls}" cx="${n.x}" cy="${n.y}" r="${r}"/>`);
+      });
+
+      parts.push('</svg>');
+      return parts.join('');
+    }
+
+    function findBranchIdx(state) {
+      // Return the branchIdx of the last choice (which led to the result)
+      if (!state.stack.length) return null;
+      const last = state.stack[state.stack.length - 1];
+      return last.branchIdx;
+    }
+
+    function renderPrintDiagram(layout) {
+      const { nodes, edges } = layout;
+      const nodeMap = {};
+      nodes.forEach(n => nodeMap[n.id] = n);
+
+      // Use a bigger viewBox for print
+      const cols = Math.max(...nodes.map(n => n.col)) + 1;
+      const maxRowsPerCol = Math.max(
+        ...Array.from({ length: cols }, (_, c) =>
+          nodes.filter(n => n.col === c).length
+        ),
+        1
+      );
+      const W = 600, H = Math.max(150, 60 * maxRowsPerCol);
+      const colSpacing = (W - 80) / Math.max(cols - 1, 1);
+      const scaled = nodes.map(n => {
+        const colNodes = nodes.filter(x => x.col === n.col);
+        const total = colNodes.length;
+        return {
+          ...n,
+          px: 40 + n.col * colSpacing,
+          py: total > 1
+            ? 30 + (n.row / (total - 1)) * (H - 60)
+            : H / 2
+        };
+      });
+      const scaledMap = {};
+      scaled.forEach(n => scaledMap[n.id] = n);
+
+      const parts = [`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`];
+
+      // Edges
+      edges.forEach(e => {
+        const a = scaledMap[e.from], b = scaledMap[e.to];
+        if (!a || !b) return;
+        const midX = (a.px + b.px) / 2;
+        parts.push(`<path d="M ${a.px},${a.py} C ${midX},${a.py} ${midX},${b.py} ${b.px},${b.py}" stroke="#8D86A8" stroke-width="1.2" fill="none"/>`);
+      });
+
+      // Nodes
+      scaled.forEach(n => {
+        if (n.type === 't') {
+          parts.push(`<circle cx="${n.px}" cy="${n.py}" r="7" fill="#fff" stroke="#10B981" stroke-width="1.5"/>`);
+          parts.push(`<text x="${n.px}" y="${n.py + 3}" text-anchor="middle" font-family="DM Sans, sans-serif" font-size="8" fill="#065F46" font-weight="600">✓</text>`);
+        } else {
+          parts.push(`<circle cx="${n.px}" cy="${n.py}" r="10" fill="#7C3AED" stroke="#5B21B6" stroke-width="1.5"/>`);
+          parts.push(`<text x="${n.px}" y="${n.py + 3}" text-anchor="middle" font-family="DM Mono, monospace" font-size="9" fill="#fff" font-weight="700">Q${n.qn}</text>`);
+        }
+      });
+
+      parts.push('</svg>');
+      return parts.join('');
+    }
+
+    function DecisionTree(sectionEl) {
+      const self = this;
+      self.section = sectionEl;
+      self.id = sectionEl.id;
+      self.qs = {};
+      self.firstQ = null;
+      self.stack = [];        // [{ label, qFrom, branchIdx }]
+      self.curQ = null;
+      self.result = null;
+      self.mode = 'interactive';
+
+      sectionEl.querySelectorAll('.static-view .question').forEach(qEl => {
+        const numEl = qEl.querySelector('.q-num');
+        if (!numEl) return;
+        const m = numEl.textContent.match(/\d+/);
+        if (!m) return;
+        const n = parseInt(m[0], 10);
+        if (self.firstQ === null) self.firstQ = n;
+
+        const textEl = qEl.querySelector('.q-text');
+        const text = textEl ? textEl.textContent.trim() : '';
+        const branches = [];
+
+        qEl.querySelectorAll('.branch').forEach((bEl, bi) => {
+          const labelEl = bEl.querySelector('.branch-label');
+          const label = labelEl ? labelEl.textContent.trim() : '';
+          const rec = bEl.querySelector('.recommendation');
+          const cont = bEl.querySelector('.continue');
+          if (rec) {
+            const titleEl  = rec.querySelector('.rec-title');
+            const detailEl = rec.querySelector('.rec-detail');
+            branches.push({
+              label,
+              type: 'rec',
+              title:  titleEl  ? titleEl.textContent.trim()  : '',
+              detail: detailEl ? detailEl.textContent.trim() : ''
+            });
+          } else if (cont) {
+            const cm = cont.textContent.match(/Question\s+(\d+)/i);
+            branches.push({
+              label,
+              type: 'next',
+              target: cm ? parseInt(cm[1], 10) : null
+            });
+          }
+        });
+
+        self.qs[n] = { n, text, branches };
+      });
+
+      self.curQ = self.firstQ;
+      self.pane = sectionEl.querySelector('.i-pane');
+      self.staticView = sectionEl.querySelector('.static-view');
+      self.printDiagram = sectionEl.querySelector('.print-tree-diagram');
+
+      /* Compute layout once */
+      self.layout = layoutTree(self.qs, self.firstQ);
+
+      /* Render print diagram once (it's hidden in screen mode) */
+      if (self.printDiagram) {
+        self.printDiagram.innerHTML = renderPrintDiagram(self.layout);
+      }
+
+      /* Static-toggle injected at top of static-view */
+      self.staticToggleRow = document.createElement('div');
+      self.staticToggleRow.className = 'static-toggle-row';
+      const stBtn = document.createElement('button');
+      stBtn.className = 'static-toggle';
+      stBtn.textContent = '▶ Interactive mode';
+      stBtn.addEventListener('click', () => self.setMode('interactive'));
+      self.staticToggleRow.appendChild(stBtn);
+      self.staticView.insertBefore(self.staticToggleRow, self.staticView.firstChild);
+
+      self.render();
+    }
+
+    DecisionTree.prototype.setMode = function (mode) {
+      this.mode = mode;
+      this.section.classList.toggle('static-mode', mode === 'static');
+      if (mode === 'interactive') this.render();
+    };
+
+    DecisionTree.prototype.choose = function (idx) {
+      const q = this.qs[this.curQ];
+      const branch = q.branches[idx];
+      if (!branch) return;
+      this.stack.push({ label: branch.label, qFrom: this.curQ, branchIdx: idx });
+      if (branch.type === 'rec') {
+        this.result = branch;
+      } else {
+        this.curQ = branch.target;
+      }
+      this.render();
+    };
+
+    DecisionTree.prototype.back = function () {
+      if (!this.stack.length) return;
+      const last = this.stack.pop();
+      this.result = null;
+      this.curQ = last.qFrom;
+      this.render();
+    };
+
+    DecisionTree.prototype.reset = function () {
+      this.stack = [];
+      this.result = null;
+      this.curQ = this.firstQ;
+      this.render();
+    };
+
+    DecisionTree.prototype.render = function () {
+      const html = [];
+
+      /* Top bar: breadcrumb + minimap + toggle */
+      html.push('<div class="i-top-bar">');
+      html.push('<div class="i-breadcrumb">');
+      if (!this.stack.length) {
+        html.push('<span class="i-crumb-empty">Answer to find your approach.</span>');
+      } else {
+        this.stack.forEach((s, i) => {
+          const isLast = i === this.stack.length - 1;
+          const cls = (this.result && isLast) ? 'i-crumb done' : 'i-crumb';
+          const label = s.label.length > 18 ? s.label.slice(0, 16) + '…' : s.label;
+          html.push(`<span class="${cls}">${escapeHtml(label)}</span>`);
+          if (!isLast) html.push('<span class="i-crumb-sep">›</span>');
+        });
+      }
+      html.push('</div>');
+
+      /* Mini-map SVG */
+      html.push(`<div class="i-minimap" title="Tree path">${renderMinimap(this.layout, this)}</div>`);
+
+      html.push('<button class="i-toggle" type="button">View all</button>');
+      html.push('</div>');
+
+      /* Body */
+      html.push('<div class="i-body">');
+      if (this.result) {
+        html.push('<div class="i-result">');
+        html.push('<div class="i-result-label">Recommendation</div>');
+        html.push(`<div class="i-result-title">${escapeHtml(this.result.title)}</div>`);
+        html.push(`<div class="i-result-detail">${escapeHtml(this.result.detail)}</div>`);
+        html.push('</div>');
+      } else {
+        const q = this.qs[this.curQ];
+        if (!q) {
+          html.push('<p style="color:var(--light);font-style:italic;">Question not found.</p>');
+        } else {
+          const totalQ = Object.keys(this.qs).length;
+          html.push('<div class="i-q-meta">');
+          html.push(`<div class="i-q-num">Question ${q.n}</div>`);
+          html.push(`<div class="i-q-progress">${q.n} of ${totalQ}</div>`);
+          html.push('</div>');
+          html.push(`<p class="i-q-text">${escapeHtml(q.text)}</p>`);
+          html.push('<div class="i-choices">');
+          q.branches.forEach((b, i) => {
+            html.push(`<button class="choice-btn" type="button" data-idx="${i}">${escapeHtml(b.label)}</button>`);
+          });
+          html.push('</div>');
+        }
+      }
+
+      if (this.stack.length || this.result) {
+        html.push('<div class="i-footer">');
+        html.push('<button class="i-back-btn" type="button">← Back</button>');
+        html.push('<button class="i-reset-btn" type="button">Start over</button>');
+        html.push('</div>');
+      }
+      html.push('</div>');
+
+      this.pane.innerHTML = html.join('');
+
+      /* Wire events */
+      const toggleBtn = this.pane.querySelector('.i-toggle');
+      if (toggleBtn) toggleBtn.addEventListener('click', () => this.setMode('static'));
+      this.pane.querySelectorAll('.choice-btn').forEach(btn => {
+        btn.addEventListener('click', () => this.choose(parseInt(btn.dataset.idx, 10)));
+      });
+      const backBtn = this.pane.querySelector('.i-back-btn');
+      const resetBtn = this.pane.querySelector('.i-reset-btn');
+      if (backBtn)  backBtn.addEventListener('click', () => this.back());
+      if (resetBtn) resetBtn.addEventListener('click', () => this.reset());
+    };
+
+    document.querySelectorAll('section.tree').forEach(s => new DecisionTree(s));
+  })();
+</script>
+</body>
+</html>
